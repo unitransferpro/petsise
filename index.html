@@ -129,15 +129,50 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 .hero p{margin-top:10px;font-size:14px;line-height:1.6;color:var(--ink2);word-break:keep-all}
 .brand,.sec-t,.d-price,.total-card .tv,.sheet h2,.nat-line b{font-family:var(--cute);font-weight:400;letter-spacing:.01em}
 
-/* strolling mascot */
-.mascot-strip{position:relative;height:56px;margin-top:6px;overflow:hidden}
-.paw-trail{position:absolute;bottom:20px;left:6px;font-size:12px;opacity:.3;letter-spacing:30px;user-select:none;-webkit-user-select:none}
-.mascot{position:absolute;left:0;bottom:0;font-size:40px;line-height:1;animation:stroll 10s ease-in-out infinite;cursor:pointer}
-.mascot i{display:inline-block;font-style:normal;animation:bob .38s ease-in-out infinite alternate}
-.mascot:active i{animation:boing .5s cubic-bezier(.3,2.2,.4,1)}
-@keyframes stroll{0%{transform:translateX(0) scaleX(-1)}46%{transform:translateX(min(230px,56vw)) scaleX(-1)}50%{transform:translateX(min(230px,56vw)) scaleX(1)}96%{transform:translateX(0) scaleX(1)}100%{transform:translateX(0) scaleX(-1)}}
+/* mascot scene — custom SVG pet with walk cycle */
+.scene{position:relative;height:98px;border-radius:16px;background:var(--track);overflow:hidden}
+.scene::before{content:"";position:absolute;left:12px;right:12px;bottom:13px;height:2px;border-radius:2px;background:var(--glass-line)}
+.walker{position:absolute;bottom:11px;left:16px;animation:patrol 18s linear infinite;will-change:transform}
+.gait{display:inline-block;animation:trot .38s ease-in-out infinite alternate}
+@keyframes patrol{
+  0%{transform:translateX(0) scaleX(1)}
+  48%{transform:translateX(min(250px,56vw)) scaleX(1)}
+  50%{transform:translateX(min(250px,56vw)) scaleX(-1)}
+  98%{transform:translateX(0) scaleX(-1)}
+  100%{transform:translateX(0) scaleX(1)}
+}
+@keyframes trot{to{transform:translateY(-2px)}}
+.pet .leg{transform-box:fill-box;transform-origin:top center;animation:step .38s ease-in-out infinite alternate}
+.pet .l2,.pet .l3{animation-direction:alternate-reverse}
+@keyframes step{from{transform:rotate(15deg)}to{transform:rotate(-15deg)}}
+.pet .tail{transform-box:fill-box;transform-origin:right center;animation:wag .4s ease-in-out infinite alternate}
+.pet .cattail{transform-origin:bottom center;animation-name:sway;animation-duration:1.5s}
+@keyframes wag{from{transform:rotate(9deg)}to{transform:rotate(-13deg)}}
+@keyframes sway{from{transform:rotate(-8deg)}to{transform:rotate(10deg)}}
+.pet .ear{transform-box:fill-box;transform-origin:bottom center;animation:flop .8s ease-in-out infinite alternate}
+@keyframes flop{from{transform:rotate(-5deg)}to{transform:rotate(8deg)}}
 @keyframes bob{to{transform:translateY(-4px)}}
-@media (prefers-reduced-motion: reduce){.mascot,.mascot i,.lock-emoji{animation:none}}
+@media (prefers-reduced-motion: reduce){.walker,.gait,.pet .leg,.pet .tail,.pet .ear,.lock-emoji{animation:none}}
+.scene-cap{display:flex;align-items:center;gap:7px;margin-top:12px;flex-wrap:wrap}
+.pchip{font-size:11.5px;font-weight:700;color:var(--ink2);background:var(--track);padding:5px 11px;border-radius:999px}
+.pedit{margin-left:auto;font-size:12px;font-weight:800;color:var(--accent);padding:5px 4px}
+
+/* dashboard bits */
+.hlt{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--ink2);margin-bottom:8px}
+.hlt svg{width:15px;height:15px;color:var(--accent);flex:0 0 auto}
+.hlt span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.delta.sm{font-size:10.5px;padding:4px 9px;margin-top:7px}
+.qic{width:42px;height:42px;border-radius:15px;background:var(--accent-bg);display:grid;place-items:center}
+.qic svg{width:20px;height:20px}
+.promo{display:flex;align-items:center;gap:12px;background:var(--accent-bg);border-color:transparent;cursor:pointer;padding:16px 18px}
+.promo .ppaw{width:42px;height:42px;border-radius:50%;background:var(--glass-hi);display:grid;place-items:center;flex:0 0 auto}
+.promo .ppaw svg{width:20px;height:20px;color:var(--accent)}
+.promo .pt{font-family:var(--cute);font-size:15px}
+.promo .pd{font-size:12px;color:var(--ink2);margin-top:2px;word-break:keep-all}
+.promo .pgo{margin-left:auto;color:var(--accent);flex:0 0 auto}
+.promo .pgo svg{width:18px;height:18px}
+.bpaw svg{width:16px;height:16px;color:var(--accent);vertical-align:-3px;margin-right:5px}
+.hrow .ic svg{width:18px;height:18px}
 
 /* PLUS */
 .plus-tag{display:inline-flex;align-items:center;background:var(--warn-bg);color:var(--warn-tx);border-radius:999px;font-size:10px;font-weight:800;padding:3px 8px;letter-spacing:.05em;font-family:"Pretendard Variable",sans-serif;vertical-align:2px}
@@ -357,7 +392,7 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 <div class="aur a1"></div><div class="aur a2"></div><div class="aur a3"></div>
 
 <header class="topbar">
-  <div class="brand">🐾 펫시세<small>동물병원 진료비 지도</small></div>
+  <div class="brand"><span class="bpaw"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="12" cy="15.6" rx="4.7" ry="3.9"/><ellipse cx="5.3" cy="10.6" rx="2.4" ry="3.1"/><ellipse cx="9.9" cy="6.8" rx="2.5" ry="3.3"/><ellipse cx="14.7" cy="7" rx="2.5" ry="3.3"/><ellipse cx="19" cy="11" rx="2.3" ry="2.9"/></svg></span>펫시세<small>동물병원 진료비 지도</small></div>
   <button class="region-pill" id="pillRegion" onclick="go('set')">서울</button>
 </header>
 
@@ -460,8 +495,48 @@ const IC = {
   calc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M8.5 7.5h7"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01M8.5 18.5h.01M12 18.5h.01M15.5 18.5h.01" stroke-width="2.4"/></svg>',
   set:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01c.26.62.86 1.03 1.53 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.03Z"/></svg>',
   call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7a2 2 0 0 1 1.7 2.05Z"/></svg>',
-  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  paw:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="12" cy="15.6" rx="4.7" ry="3.9"/><ellipse cx="5.3" cy="10.6" rx="2.4" ry="3.1"/><ellipse cx="9.9" cy="6.8" rx="2.5" ry="3.3"/><ellipse cx="14.7" cy="7" rx="2.5" ry="3.3"/><ellipse cx="19" cy="11" rx="2.3" ry="2.9"/></svg>',
+  syr:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 9.7 18.3a2.4 2.4 0 0 1-3.4 0L5 17a2.4 2.4 0 0 1 0-3.4L14.3 4.3"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/></svg>',
+  cross:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.6-9.2-9A5.2 5.2 0 0 1 12 6.6 5.2 5.2 0 0 1 21.2 11c-2.2 4.4-9.2 9-9.2 9Z"/></svg>',
+  drop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6.5 7.2 6.5 11.5a6.5 6.5 0 1 1-13 0C5.5 10.2 12 3 12 3Z"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>'
 };
+
+/* custom vector mascots (no emoji) */
+const DOG_SVG = '<svg class="pet" viewBox="0 0 96 66" width="88" height="60" aria-hidden="true">'
+ + '<g class="tail"><rect x="0" y="25" width="17" height="7" rx="3.5" fill="#cf9059"/></g>'
+ + '<g class="leg l1"><rect x="19" y="40" width="7.5" height="18" rx="3.7" fill="#d99e69"/></g>'
+ + '<g class="leg l3"><rect x="30" y="40" width="7.5" height="18" rx="3.7" fill="#e9b27f"/></g>'
+ + '<g class="leg l2"><rect x="43" y="40" width="7.5" height="18" rx="3.7" fill="#d99e69"/></g>'
+ + '<g class="leg l4"><rect x="53" y="40" width="7.5" height="18" rx="3.7" fill="#e9b27f"/></g>'
+ + '<rect x="12" y="20" width="52" height="28" rx="14" fill="#e9b27f"/>'
+ + '<ellipse cx="38" cy="45" rx="14" ry="6.5" fill="#f7dcbd"/>'
+ + '<g class="head"><circle cx="66" cy="18" r="15" fill="#e9b27f"/>'
+ + '<ellipse cx="76" cy="23" rx="7.5" ry="5.5" fill="#f7dcbd"/>'
+ + '<circle cx="80.5" cy="21" r="2.6" fill="#5b4632"/>'
+ + '<circle cx="67" cy="14.5" r="2.3" fill="#5b4632"/>'
+ + '<circle cx="71" cy="26.5" r="2.6" fill="#f5a08c" opacity=".65"/>'
+ + '<g class="ear"><ellipse cx="57" cy="9" rx="5.5" ry="8.5" fill="#cf9059" transform="rotate(-24 57 9)"/></g></g>'
+ + '</svg>';
+const CAT_SVG = '<svg class="pet" viewBox="0 0 96 66" width="88" height="60" aria-hidden="true">'
+ + '<g class="tail cattail"><rect x="2" y="16" width="7" height="28" rx="3.5" fill="#b7b0a5"/></g>'
+ + '<g class="leg l1"><rect x="19" y="40" width="7" height="18" rx="3.5" fill="#c3bcb1"/></g>'
+ + '<g class="leg l3"><rect x="30" y="40" width="7" height="18" rx="3.5" fill="#cfc9c0"/></g>'
+ + '<g class="leg l2"><rect x="43" y="40" width="7" height="18" rx="3.5" fill="#c3bcb1"/></g>'
+ + '<g class="leg l4"><rect x="52" y="40" width="7" height="18" rx="3.5" fill="#cfc9c0"/></g>'
+ + '<rect x="12" y="22" width="50" height="26" rx="13" fill="#cfc9c0"/>'
+ + '<ellipse cx="36" cy="45" rx="13" ry="6" fill="#e9e4db"/>'
+ + '<g class="head"><circle cx="66" cy="18" r="14" fill="#cfc9c0"/>'
+ + '<polygon points="55,10 59,1 65,8" fill="#b7b0a5"/>'
+ + '<polygon points="57.2,8.6 59.4,3.8 62.6,7.6" fill="#f3b8ab"/>'
+ + '<g class="ear"><polygon points="67,7 72,-1 77,8" fill="#b7b0a5"/><polygon points="69.2,6 72,1.6 74.8,6.6" fill="#f3b8ab"/></g>'
+ + '<circle cx="66" cy="15" r="2.2" fill="#4a443c"/>'
+ + '<polygon points="73.5,20 77.5,20 75.5,22.6" fill="#e8968a"/>'
+ + '<path d="M78 18.5h8M78 21.5h9M78 24.5h8" stroke="#a49c8f" stroke-width=".9" stroke-linecap="round" fill="none"/>'
+ + '<circle cx="61" cy="24" r="2.4" fill="#f5a08c" opacity=".5"/></g>'
+ + '</svg>';
 
 /* ───────── router / dock ───────── */
 const TABS = [["home","홈",IC.home],["price","시세",IC.price],["hosp","병원",IC.hosp],["calc","계산기",IC.calc],["set","설정",IC.set]];
@@ -476,20 +551,28 @@ function vHome(){
   const h = new Date().getHours();
   const greet = h < 6 ? "늦은 밤이에요" : h < 12 ? "좋은 아침이에요" : h < 18 ? "좋은 오후예요" : "좋은 저녁이에요";
   const picks = [petName("종합백신"), "초진 진찰료", "심장사상충 예방", "전혈구 검사·판독"];
-  const cards = picks.map(n => {
+  const picon = [IC.syr, IC.cross, IC.heart, IC.drop];
+  const cards = picks.map((n, pi) => {
     const g = GROUPS[n]; if (!g) return "";
     const v = variantOf(g), nat = natOf(v), a = v.r[S.region];
     const pct = (a[1] - nat.v) / nat.v * 100;
-    return `<div class="hl"><div class="t">${n}${v.wt ? " · " + v.wt : ""}</div>
+    return `<div class="hl"><div class="hlt">${picon[pi]}<span>${n}${v.wt ? " · " + v.wt : ""}</span></div>
       <div class="v">${won(a[1])}원</div>
-      <div class="d ${deltaCls(pct)}">전국 대비 ${deltaTxt(pct)}</div></div>`;
+      <span class="delta sm ${deltaCls(pct)}">${Math.abs(pct) < 1 ? "전국 평균 수준" : "전국 대비 " + deltaTxt(pct)}</span></div>`;
   }).join("");
   return `<div class="screen">
     <section class="hero">
-      <span class="eyebrow">🏛 농림축산식품부 공식 공개 데이터</span>
-      <h1>${greet},<br>${D.sido[S.region]}${S.gugun ? " " + S.gugun : ""} 보호자님 🐾</h1>
-      <p>${S.pet === "cat" ? "고양이" : "강아지"}${S.pet === "dog" ? " (" + S.wt + " 기준)" : ""} 프로필로 우리 동네 시세를 보여드려요. 프로필은 설정에서 바꿀 수 있어요.</p>
-      <div class="mascot-strip"><span class="paw-trail">🐾 🐾 🐾 🐾 🐾</span><span class="mascot" aria-hidden="true"><i>${S.pet === "cat" ? "🐈" : "🐕"}</i></span></div>
+      <span class="eyebrow">농림축산식품부 공식 공개 데이터</span>
+      <h1>${greet},<br>${D.sido[S.region]}${S.gugun ? " " + S.gugun : ""} 보호자님</h1>
+      <p>${S.pet === "cat" ? "고양이" : "강아지"}${S.pet === "dog" ? " (" + S.wt + " 기준)" : ""} 프로필로 우리 동네 시세를 보여드려요.</p>
+    </section>
+    <section class="card" style="padding:14px">
+      <div class="scene"><span class="walker"><span class="gait">${S.pet === "cat" ? CAT_SVG : DOG_SVG}</span></span></div>
+      <div class="scene-cap">
+        <span class="pchip">${S.pet === "cat" ? "고양이" : "강아지"}${S.pet === "dog" ? " · " + S.wt : ""}</span>
+        <span class="pchip">${D.sido[S.region]}${S.gugun ? " " + S.gugun : ""}</span>
+        <button class="pedit" onclick="go('set')">바꾸기</button>
+      </div>
     </section>
     <section class="card">
       <div class="sec-t">우리 지역 주요 진료비</div>
@@ -497,14 +580,14 @@ function vHome(){
       <div class="hl-grid">${cards}</div>
     </section>
     <div class="quick">
-      <button onclick="go('price')">${IC.price}시세 전체</button>
-      <button onclick="go('hosp')">${IC.hosp}병원 찾기</button>
-      <button onclick="go('calc')">${IC.calc}계산기${S.plus ? "" : " 🔒"}</button>
+      <button onclick="go('price')"><span class="qic">${IC.price}</span>시세 전체</button>
+      <button onclick="go('hosp')"><span class="qic">${IC.hosp}</span>병원 찾기</button>
+      <button onclick="go('calc')"><span class="qic">${IC.calc}</span>계산기${S.plus ? "" : ' <span class="plus-tag">PLUS</span>'}</button>
     </div>
-    ${S.plus ? "" : `<section class="card" style="margin-top:14px;border-style:dashed;border-color:var(--accent)">
-      <div class="sec-t">🐾 펫시세 PLUS</div>
-      <div class="sec-s">우리 동네(시·군·구) 시세와 진료비 계산기가 열려요</div>
-      <button class="plus-btn" onclick="openPlus()">PLUS 살펴보기</button>
+    ${S.plus ? "" : `<section class="card promo" style="margin-top:14px" role="button" tabindex="0" onclick="openPlus()">
+      <span class="ppaw">${IC.paw}</span>
+      <span><span class="pt">펫시세 PLUS</span><div class="pd">동네(시·군·구) 시세와 진료비 계산기가 열려요</div></span>
+      <span class="pgo">${IC.chev}</span>
     </section>`}
     <section class="card" style="margin-top:14px">
       <div class="sec-t">이 데이터, 어디서 왔나요?</div>
@@ -652,7 +735,7 @@ function renderHospParts(){
     el("hList").innerHTML = `<div class="count-cap">${D.sido[S.region]}${hospGugunF ? " " + hospGugunF : ""} · ${won(rows.length)}곳</div>` +
       (shown.length ? shown.map((h, i) =>
         `<button class="hrow" onclick="openHosp(${list.indexOf(h)})">
-          <span class="ic">🐾</span>
+          <span class="ic">${IC.paw}</span>
           <span class="bd"><span class="nm">${esc(h[0])}</span><span class="ad">${esc(h[2])}</span></span>
           <span class="mapb" role="link" aria-label="네이버 지도에서 보기" onclick="event.stopPropagation();openNaver(${list.indexOf(h)})">${IC.pin}</span>
         </button>`).join("") : `<div class="empty">조건에 맞는 병원이 없어요.<br>검색어나 지역을 바꿔보세요.</div>`) +
