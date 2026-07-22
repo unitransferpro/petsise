@@ -967,8 +967,12 @@ function initHMap(entries){
     if (!hmap || hmap._container !== el) {
       if (hmap) { hmap.remove(); hmap = null; }
       hmap = L.map(el, { zoomControl: true, attributionControl: true });
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(hmap);
+      const dark = document.body.classList.contains("dk");
+      // CARTO basemap serves @2x retina tiles via {r} → crisp on HiDPI screens
+      const url = dark
+        ? "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+      L.tileLayer(url, { maxZoom: 20, subdomains: "abcd", attribution: "© OpenStreetMap · © CARTO" }).addTo(hmap);
     }
     if (hmapLayer) hmapLayer.remove();
     hmapLayer = L.layerGroup().addTo(hmap);
