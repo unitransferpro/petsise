@@ -425,6 +425,8 @@ let S = {tab:"home", region:"11", gugun:"", pet:"dog", wt:"5kg", theme:"light", 
          cat:"진찰료", name:"초진 진찰료", calc:["초진 진찰료","종합백신(개)"]};
 try { S = Object.assign(S, JSON.parse(localStorage.getItem("petsise2") || "{}")); } catch(e){}
 if (!GROUPS[S.name]) { S.cat = "진찰료"; S.name = "초진 진찰료"; }
+// light is the product default — only an explicit choice in 설정 (themeSet) overrides it
+if (!S.themeSet) S.theme = "light";
 const save = () => localStorage.setItem("petsise2", JSON.stringify(S));
 
 /* lazy data */
@@ -923,7 +925,7 @@ function setPet(p){
   save(); render();
 }
 function setWt(w){ S.wt = w; save(); render(); }
-function setTheme(t){ S.theme = t; save(); applyTheme(); render(); }
+function setTheme(t){ S.theme = t; S.themeSet = true; save(); applyTheme(); render(); }
 
 /* ───────── shared ───────── */
 function footHtml(){
