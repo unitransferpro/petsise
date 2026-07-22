@@ -6,5 +6,9 @@
   "background_color": "#fdf8f1",
   "theme_color": "#fdf8f1",
   "description": "농림축산식품부가 공개한 전국 동물병원 진료비를 시도별로 비교하는 지도",
-  "icons": []
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }
