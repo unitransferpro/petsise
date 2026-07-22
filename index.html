@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>펫시세 — 동물병원 진료비 지도</title>
+<title>펫시세 · 동물병원 진료비 지도</title>
 <meta name="description" content="농림축산식품부가 공개한 전국 동물병원 진료비를 시도·시군구별로 비교하고, 전국 5,459개 동물병원을 찾아보세요.">
 <meta name="theme-color" content="#fdf8f1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#211a14" media="(prefers-color-scheme: dark)">
@@ -217,6 +217,35 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 .rank-badge.cheap{background:var(--good)}.rank-badge.pricey{background:var(--bad)}
 .rank-txt{font-size:12.5px;line-height:1.55;color:var(--ink2)}
 .rank-txt b{color:var(--ink);font-weight:700}
+/* annual care card + sheet */
+.care{cursor:pointer}
+.care-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.care-sub{font-size:12px;color:var(--ink3);margin-top:3px}
+.care-go{color:var(--accent);flex:0 0 auto}.care-go svg{width:18px;height:18px}
+.care-total{font-family:var(--cute);font-weight:400;font-size:33px;letter-spacing:.01em;margin-top:12px;color:var(--accent);line-height:1}
+.care-total small{font-family:"Pretendard Variable",sans-serif;font-size:15px;font-weight:700;color:var(--ink3);margin-left:4px}
+.care-mini{font-size:11.5px;color:var(--ink3);margin-top:8px}
+.care-hero{font-family:var(--cute);font-size:34px;color:var(--accent);margin:14px 0 8px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;line-height:1}
+.care-hero small{font-family:"Pretendard Variable",sans-serif;font-size:16px;font-weight:700;color:var(--ink3)}
+.care-hero span{font-family:"Pretendard Variable",sans-serif;font-size:12.5px;font-weight:600;color:var(--ink3)}
+.care-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 2px;border-bottom:1px solid var(--row-line)}
+.care-row .cr-n{font-size:13.5px;font-weight:600}
+.care-row .cr-n small{display:block;font-weight:500;color:var(--ink3);font-size:11.5px;margin-top:2px}
+.care-row .cr-p{font-size:14px;font-weight:750;white-space:nowrap;text-align:right}
+.care-row .cr-p em{display:block;font-style:normal;font-weight:600;color:var(--ink3);font-size:11px;margin-top:1px}
+.care-row.total{border-bottom:0;border-top:2px solid var(--glass-line);margin-top:2px}
+.care-row.total .cr-n{font-weight:800}.care-row.total .cr-p{color:var(--accent);font-size:16px}
+.pchip.tap{color:var(--accent);cursor:pointer}
+/* cheapest regions top-3 on detail */
+.top3{margin-top:14px}
+.top3 h4{font-size:12px;font-weight:700;color:var(--ink3);margin-bottom:8px}
+.t3row{display:flex;gap:8px}
+.t3{flex:1;border-radius:14px;background:var(--track);padding:11px 6px;text-align:center;cursor:pointer;transition:transform .12s}
+.t3:active{transform:scale(.94)}
+.t3 .r{font-size:10px;font-weight:800;color:var(--good)}
+.t3 .rg{font-size:13.5px;font-weight:700;margin-top:3px}
+.t3 .rp{font-size:12px;font-weight:700;color:var(--ink2);margin-top:2px}
+.t3.here{outline:2px solid var(--accent);background:var(--accent-bg)}
 /* list/map view toggle + leaflet map */
 .listhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .viewseg{display:flex;padding:3px;border-radius:12px;background:var(--track);gap:2px;flex:0 0 auto}
@@ -490,6 +519,10 @@ const SHORT = {"11":"서울","26":"부산","27":"대구","28":"인천","29":"광
 const GRID = {"11":[2,1],"42":[3,1],"28":[1,2],"41":[2,2],"43":[3,2],"47":[4,2],"44":[1,3],"36":[2,3],"30":[3,3],"27":[4,3],"45":[1,4],"48":[3,4],"31":[4,4],"29":[1,5],"26":[4,5],"46":[1,6],"50":[1,7]};
 const CENTROID = {"43":[36.7278,127.6115],"42":[37.7122,128.1836],"28":[37.4714,126.6847],"45":[35.7577,127.0229],"48":[35.2436,128.4492],"44":[36.6319,126.9098],"29":[35.1647,126.8723],"47":[36.1853,128.7037],"30":[36.3517,127.3839],"26":[35.1716,129.0728],"27":[35.8697,128.5822],"31":[35.5473,129.288],"11":[37.5462,127.002],"46":[34.9177,126.9207],"50":[33.4283,126.5087],"36":[36.5345,127.2742],"41":[37.4332,127.0304]};
 const CATS = ["진찰료","입원비","예방접종","혈액검사","영상검사","투약·조제"];
+const COUNT = {"43":183,"42":169,"28":259,"45":220,"48":365,"44":298,"29":130,"47":364,"30":120,"26":283,"27":216,"31":81,"11":974,"46":242,"50":115,"36":35,"41":1405};
+// 연간 기본 관리 루틴 (성견/성묘 기준, 추정) — [항목명, 연 횟수, 설명]
+const CARE_DOG = [["종합백신(개)",1,"성견 연 1회 추가접종"],["광견병백신",1,"연 1회"],["심장사상충 예방",12,"매달 1회"],["외부기생충 예방",12,"매달 1회"],["초진 진찰료",1,"건강검진 방문"],["전혈구 검사·판독",1,"건강검진 기본 혈액"]];
+const CARE_CAT = [["종합백신(고양이)",1,"성묘 연 1회 추가접종"],["광견병백신",1,"연 1회"],["외부기생충 예방",12,"매달 1회"],["초진 진찰료",1,"건강검진 방문"],["전혈구 검사·판독",1,"건강검진 기본 혈액"]];
 const VERSION = "2.0.0";
 const SRC_DATE = "2026-07-22";
 const HOSP_DATE = "2025-11-27";
@@ -559,6 +592,16 @@ function gugunStat(cd, gg, it){
   const arr = GUGUN[cd] && GUGUN[cd][gg];
   return (arr && arr[it.idx] && arr[it.idx][1] > 0) ? arr[it.idx] : null;
 }
+// average price for an item under the current profile (gugun-aware for PLUS)
+function priceOf(name){
+  const g = GROUPS[name]; if (!g) return 0;
+  const v = variantOf(g);
+  const gs = (S.plus && S.gugun) ? gugunStat(S.region, S.gugun, v) : null;
+  return (gs || v.r[S.region])[1];
+}
+function careList(){ return S.pet === "cat" ? CARE_CAT : CARE_DOG; }
+function careRows(){ return careList().map(([name, cnt, note]) => { const unit = priceOf(name); return { name, cnt, note, unit, sub: unit * cnt }; }); }
+function careTotal(){ return careRows().reduce((s, r) => s + r.sub, 0); }
 // geo — hospital record is [name,gugun,road,phone,year,lat,lng]
 const RAD = Math.PI / 180;
 function haversine(la1, lo1, la2, lo2){
@@ -660,14 +703,15 @@ function renderDock(){
 function vHome(){
   const h = new Date().getHours();
   const greet = h < 6 ? "늦은 밤이에요" : h < 12 ? "좋은 아침이에요" : h < 18 ? "좋은 오후예요" : "좋은 저녁이에요";
+  const areaLabel = (S.plus && S.gugun) ? S.gugun : D.sido[S.region];
   const picks = [petName("종합백신"), "초진 진찰료", "심장사상충 예방", "전혈구 검사·판독"];
   const picon = [IC.syr, IC.cross, IC.heart, IC.drop];
   const cards = picks.map((n, pi) => {
     const g = GROUPS[n]; if (!g) return "";
-    const v = variantOf(g), nat = natOf(v), a = v.r[S.region];
-    const pct = (a[1] - nat.v) / nat.v * 100;
+    const v = variantOf(g), nat = natOf(v), avg = priceOf(n);
+    const pct = (avg - nat.v) / nat.v * 100;
     return `<div class="hl"><div class="hlt"><span class="ico">${picon[pi]}</span><span>${n}${v.wt ? " · " + v.wt : ""}</span></div>
-      <div class="v">${won(a[1])}원</div>
+      <div class="v">${won(avg)}원</div>
       <span class="delta sm ${deltaCls(pct)}">${Math.abs(pct) < 1 ? "전국 평균 수준" : "전국보다 " + (pct > 0 ? "비쌈" : "저렴") + " " + Math.abs(pct).toFixed(0) + "%"}</span></div>`;
   }).join("");
   return `<div class="screen">
@@ -683,13 +727,24 @@ function vHome(){
       </div>
       <div class="scene-cap">
         <span class="pchip">${S.pet === "cat" ? "고양이" : "강아지"}${S.pet === "dog" ? " · " + S.wt : ""}</span>
-        <span class="pchip">${D.sido[S.region]}${S.gugun ? " " + S.gugun : ""}</span>
+        <button class="pchip tap" onclick="go('hosp')">동물병원 ${won(COUNT[S.region])}곳 ›</button>
         <button class="pedit" onclick="go('set')">프로필 바꾸기</button>
       </div>
     </section>
+    <section class="card care" role="button" tabindex="0" onclick="openCare()">
+      <div class="care-top">
+        <div>
+          <div class="sec-t plain">${S.pet === "cat" ? "고양이" : "강아지"} 1년 기본 관리비</div>
+          <div class="care-sub">${areaLabel} 평균 기준 · 접종·구충·건강검진 추정</div>
+        </div>
+        <span class="care-go">${IC.chev}</span>
+      </div>
+      <div class="care-total">${won(careTotal())}<small>원 / 년</small></div>
+      <div class="care-mini">종합백신·심장사상충·건강검진 등 ${careList().length}개 항목 합계 · 눌러서 자세히</div>
+    </section>
     <section class="card">
       <div class="sec-t">우리 지역 주요 진료비</div>
-      <div class="sec-s">${D.sido[S.region]} 평균 · 전국 평균과 비교</div>
+      <div class="sec-s">${areaLabel} 평균 · 전국 평균과 비교</div>
       <div class="hl-grid">${cards}</div>
     </section>
     <div class="quick">
@@ -753,7 +808,7 @@ function renderPriceParts(){
 function cur(){ const g = GROUPS[S.name]; return g.vars.find(v => v.wt === S.wt) || g.vars[0]; }
 function renderMap(){
   const it = cur(), nat = natOf(it);
-  document.getElementById("mapTitle").textContent = `시도별 평균 — ${S.name}${it.wt ? " · " + it.wt : ""}`;
+  document.getElementById("mapTitle").textContent = `시도별 평균 · ${S.name}${it.wt ? " · " + it.wt : ""}`;
   document.getElementById("natPrice").textContent = (nat.approx ? "≈ " : "") + won(nat.v) + "원";
   document.getElementById("natLabel").textContent = nat.approx ? "17개 시도 단순평균" : "전국 평균";
   const dark = document.body.classList.contains("dk");
@@ -800,11 +855,17 @@ function renderDetail(){
         <div class="avg" style="left:${pos(a[1])}%"></div>
       </div>
       <div class="ends"><span>최저 ${won(a[0])}원</span><span>최고 ${won(a[3])}원</span></div>
-      <div class="lens-cap">이 지역 병원들의 가격 폭이에요. 중간값은 <b>${won(a[2])}원</b> — 절반의 병원이 이보다 쌉니다.</div>
+      <div class="lens-cap">이 지역 병원들의 가격 폭이에요. 중간값은 <b>${won(a[2])}원</b>이고, 절반의 병원이 이보다 쌉니다.</div>
     </div>
     <div class="rank-card">
       <span class="rank-badge ${rcls}"><b>${rank || "–"}</b><span>${rank ? "/ " + N + "위" : "자료 없음"}</span></span>
       <span class="rank-txt">${rankLine}</span>
+    </div>
+    <div class="top3">
+      <h4>이 진료, 전국에서 가장 저렴한 지역</h4>
+      <div class="t3row">${ranked.slice(0,3).map(([cd,val],i) =>
+        `<div class="t3${cd===S.region?" here":""}" onclick="pickRegion('${cd}')">
+          <div class="r">${i+1}위</div><div class="rg">${SHORT[cd]}</div><div class="rp">${compact(val)}원</div></div>`).join("")}</div>
     </div>`;
 }
 function renderList(){
@@ -1052,9 +1113,9 @@ function closeSheet(){
 /* ───────── CALCULATOR ───────── */
 function plusBenefits(){
   return `<div style="margin:8px 0 4px">
-    <div class="plus-benefit">🏘️ <span><b>동네 시세</b> — 시·군·구 단위 정밀 가격 (201개 지역 조사 데이터)</span></div>
-    <div class="plus-benefit">🧮 <span><b>진료비 계산기</b> — 오늘 받을 진료 예상 비용 미리 계산</span></div>
-    <div class="plus-benefit">💌 <span><b>새 기능 우선 이용</b> — 시세 변동 알림 (준비 중)</span></div>
+    <div class="plus-benefit">🏘️ <span><b>동네 시세</b> · 시·군·구 단위 정밀 가격 (201개 지역 조사 데이터)</span></div>
+    <div class="plus-benefit">🧮 <span><b>진료비 계산기</b> · 오늘 받을 진료 예상 비용 미리 계산</span></div>
+    <div class="plus-benefit">💌 <span><b>새 기능 우선 이용</b> · 시세 변동 알림 (준비 중)</span></div>
   </div>`;
 }
 function openPlus(){
@@ -1064,8 +1125,27 @@ function openPlus(){
     <h2 style="text-align:center">펫시세 PLUS</h2>
     <div class="sub" style="text-align:center">데이터로 병원비 걱정을 덜어드려요</div>
     ${plusBenefits()}
-    <button class="plus-btn" onclick="activatePlus()">지금 시작하기 — 출시 기념 무료 체험</button>
+    <button class="plus-btn" onclick="activatePlus()">지금 시작하기 · 출시 기념 무료 체험</button>
     <p class="note">지금은 출시 기념 체험 기간이라 결제 없이 모든 PLUS 기능을 쓸 수 있어요. 정식 요금제는 나중에 따로 안내드려요.</p>`;
+  document.getElementById("sheetBg").classList.add("show");
+  document.getElementById("sheet").classList.add("show");
+}
+function openCare(){
+  const rows = careRows(), total = rows.reduce((s,r)=>s+r.sub,0);
+  const area = (S.plus && S.gugun) ? S.gugun : D.sido[S.region];
+  const body = rows.map(r => `<div class="care-row">
+      <span class="cr-n">${r.name}<small>${r.note}${r.cnt > 1 ? " · 연 " + r.cnt + "회" : ""}</small></span>
+      <span class="cr-p">${won(r.sub)}원${r.cnt > 1 ? `<em>${won(r.unit)}×${r.cnt}</em>` : ""}</span>
+    </div>`).join("");
+  document.getElementById("sheet").innerHTML = `
+    <div class="grip"></div>
+    <h2>${S.pet === "cat" ? "고양이" : "강아지"} 1년 기본 관리비</h2>
+    <div class="sub">${area} 평균 기준 · 성${S.pet === "cat" ? "묘" : "견"} 예방 중심 추정</div>
+    <div class="care-hero">${won(total)}<small>원 / 년</small><span>월 약 ${won(Math.round(total/12))}원 꼴</span></div>
+    ${body}
+    <div class="care-row total"><span class="cr-n">합계</span><span class="cr-p">${won(total)}원</span></div>
+    <p class="note">기본 예방·검진만 더한 추정치예요. 사료·미용·질병 치료·중성화 등은 빠져 있고, 접종 횟수는 성체 기준이라 어린 동물은 더 들 수 있어요. 실제 비용은 병원과 반려동물 상태에 따라 달라집니다.</p>
+    <button class="plus-btn" onclick="closeSheet();go('calc')">방문별 진료비 계산기 열기</button>`;
   document.getElementById("sheetBg").classList.add("show");
   document.getElementById("sheet").classList.add("show");
 }
