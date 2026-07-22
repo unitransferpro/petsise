@@ -193,29 +193,46 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 @keyframes fl1{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(34px,-18px) rotate(180deg)}100%{transform:translate(0,0) rotate(360deg)}}
 @keyframes fl2{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(-30px,-12px) rotate(-160deg)}100%{transform:translate(0,0) rotate(-360deg)}}
 /* the walking pet */
-.walker{position:absolute;bottom:42px;left:16px;z-index:3;animation:patrol 20s ease-in-out infinite;will-change:transform}
-.gait{display:block;animation:trot .4s ease-in-out infinite alternate;transform-origin:bottom center}
-.walker .shadow{position:absolute;left:50%;bottom:-3px;width:56px;height:11px;border-radius:50%;
-  background:rgba(80,55,25,.24);filter:blur(2.5px);transform:translateX(-50%);animation:shad .4s ease-in-out infinite alternate}
+.walker{position:absolute;bottom:42px;left:16px;z-index:3;cursor:pointer;animation:patrol 22s ease-in-out infinite;will-change:transform}
+.hopper{display:block;animation:hopcycle 9s ease-in-out infinite}
+.gait{display:block;transform-origin:bottom center;animation:prance .42s ease-in-out infinite}
+.walker .shadow{position:absolute;left:50%;bottom:-3px;width:58px;height:11px;border-radius:50%;
+  background:rgba(80,55,25,.24);filter:blur(2.5px);transform:translateX(-50%);animation:shad .42s ease-in-out infinite}
 .scene.night .walker .shadow,.dk .scene .walker .shadow{background:rgba(0,0,0,.32)}
+.phrt{position:absolute;left:50%;top:-2px;width:20px;height:20px;color:var(--accent);pointer-events:none;transform:translateX(-50%) scale(0);opacity:0}
+.phrt svg{width:20px;height:20px}
+.walker.react .hopper{animation:hopbig .7s cubic-bezier(.3,1.5,.4,1)}
+.walker.react .phrt{animation:hrt .8s ease-out}
 @keyframes patrol{
   0%{transform:translateX(0) scaleX(1)}
-  46%{transform:translateX(min(250px,54vw)) scaleX(1)}
-  50%{transform:translateX(min(250px,54vw)) scaleX(-1)}
-  96%{transform:translateX(0) scaleX(-1)}
+  44%{transform:translateX(min(252px,54vw)) scaleX(1)}
+  50%{transform:translateX(min(252px,54vw)) scaleX(-1)}
+  94%{transform:translateX(0) scaleX(-1)}
   100%{transform:translateX(0) scaleX(1)}
 }
-@keyframes trot{to{transform:translateY(-2.5px)}}
-@keyframes shad{to{transform:translateX(-50%) scale(.88);opacity:.7}}
+@keyframes hopcycle{0%,84%,100%{transform:translateY(0)}89%{transform:translateY(-13px)}94%{transform:translateY(-2px)}}
+@keyframes hopbig{0%{transform:translateY(0)}40%{transform:translateY(-24px)}68%{transform:translateY(0)}82%{transform:translateY(-7px)}100%{transform:translateY(0)}}
+@keyframes prance{0%{transform:translateY(0) scaleY(1)}25%{transform:translateY(-2.5px) scaleY(1.04)}50%{transform:translateY(0) scaleY(1)}75%{transform:translateY(-1.5px) scaleY(.97)}100%{transform:translateY(0) scaleY(1)}}
+@keyframes shad{0%,100%{transform:translateX(-50%) scale(1);opacity:.85}25%{transform:translateX(-50%) scale(.85);opacity:.58}}
+@keyframes hrt{0%{transform:translate(-50%,0) scale(.2);opacity:0}30%{transform:translate(-50%,-12px) scale(1.15);opacity:1}100%{transform:translate(-50%,-42px) scale(.7);opacity:0}}
+/* butterfly (day) */
+.bfly{position:absolute;top:0;left:0;z-index:2;width:16px;height:13px}
+.scene.night .bfly,.dk .scene .bfly{display:none}
+.bfly i{position:absolute;top:0;width:8px;height:13px;border-radius:62% 62% 55% 55%;display:block}
+.bfly .wl{left:0;background:#c9a6ff;transform-origin:right center;animation:flap .16s ease-in-out infinite alternate}
+.bfly .wr{right:0;background:#b591f5;transform-origin:left center;animation:flap .16s ease-in-out infinite alternate}
+@keyframes flap{to{transform:scaleX(.34)}}
+.bf1{animation:bpath 15s ease-in-out infinite}
+@keyframes bpath{0%{transform:translate(46px,64px) rotate(6deg)}20%{transform:translate(132px,36px) rotate(-6deg)}45%{transform:translate(238px,66px) rotate(8deg)}70%{transform:translate(150px,46px) rotate(-8deg)}100%{transform:translate(46px,64px) rotate(6deg)}}
 /* pet body parts */
-.pet .leg{transform-box:fill-box;transform-origin:top center;animation:step .4s ease-in-out infinite alternate}
+.pet .leg{transform-box:fill-box;transform-origin:top center;animation:step .42s ease-in-out infinite alternate}
 .pet .l2,.pet .l3{animation-direction:alternate-reverse}
-@keyframes step{from{transform:rotate(14deg)}to{transform:rotate(-14deg)}}
+@keyframes step{from{transform:rotate(17deg)}to{transform:rotate(-17deg)}}
 .pet .head{transform-box:fill-box;transform-origin:60% bottom;animation:headbob .8s ease-in-out infinite alternate}
 @keyframes headbob{to{transform:translateY(-1.5px) rotate(-2deg)}}
 .pet .eyes{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
 @keyframes blink{0%,93%,100%{transform:scaleY(1)}96.5%{transform:scaleY(.12)}}
-.pet .tail{transform-box:fill-box;transform-origin:right center;animation:wag .4s ease-in-out infinite alternate}
+.pet .tail{transform-box:fill-box;transform-origin:right center;animation:wag .32s ease-in-out infinite alternate}
 .pet .cattail{transform-origin:bottom center;animation-name:sway;animation-duration:1.5s}
 @keyframes wag{from{transform:rotate(10deg)}to{transform:rotate(-14deg)}}
 @keyframes sway{from{transform:rotate(-8deg)}to{transform:rotate(10deg)}}
@@ -942,6 +959,8 @@ const CAT_SVG = '<svg class="pet" viewBox="0 0 96 66" width="88" height="60" ari
  + '<circle cx="61" cy="24" r="2.4" fill="#f5a08c" opacity=".5"/></g>'
  + '</svg>';
 
+function petPoke(el){ el.classList.remove("react"); void el.offsetWidth; el.classList.add("react"); setTimeout(() => el.classList.remove("react"), 850); }
+
 /* ───────── router / dock ───────── */
 const TABS = [["home","홈",IC.home],["price","시세",IC.price],["hosp","병원",IC.hosp],["log","기록",IC.clip],["care","케어",IC.book],["set","설정",IC.set]];
 function go(tab){ S.tab = tab; save(); closeSheet(); render(); window.scrollTo(0,0); }
@@ -980,7 +999,11 @@ function vHome(){
         <span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span>
         <span class="hill h1"></span><span class="hill h2"></span>
         <span class="petal pt1"></span><span class="petal pt2"></span><span class="petal pt3"></span>
-        <span class="walker"><span class="shadow"></span><span class="gait">${S.pet === "cat" ? CAT_SVG : DOG_SVG}</span></span>
+        <span class="bfly bf1"><i class="wl"></i><i class="wr"></i></span>
+        <span class="walker" onclick="petPoke(this)"><span class="shadow"></span>
+          <span class="hopper"><span class="gait">${S.pet === "cat" ? CAT_SVG : DOG_SVG}</span></span>
+          <span class="phrt"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 20s-7-4.6-9.2-9A5.2 5.2 0 0 1 12 6.6 5.2 5.2 0 0 1 21.2 11c-2.2 4.4-9.2 9-9.2 9Z"/></svg></span>
+        </span>
       </div>
       <div class="scene-cap">
         <span class="pchip">${S.petName ? esc(S.petName) : (S.pet === "cat" ? "고양이" : "강아지")}${age ? " · " + age : ""}</span>
