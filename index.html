@@ -217,6 +217,34 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 .rank-badge.cheap{background:var(--good)}.rank-badge.pricey{background:var(--bad)}
 .rank-txt{font-size:12.5px;line-height:1.55;color:var(--ink2)}
 .rank-txt b{color:var(--ink);font-weight:700}
+/* list/map view toggle + leaflet map */
+.listhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.viewseg{display:flex;padding:3px;border-radius:12px;background:var(--track);gap:2px;flex:0 0 auto}
+.viewseg button{padding:6px 14px;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.viewseg button svg{width:14px;height:14px}
+.viewseg button.on{background:var(--glass-hi);color:var(--accent);box-shadow:0 1px 4px rgba(120,90,55,.14)}
+.mapwrap{position:relative;margin-top:2px}
+#hmap{height:58vh;min-height:320px;max-height:520px;border-radius:18px;overflow:hidden;background:var(--track);z-index:0}
+.leaflet-container{font-family:inherit;background:var(--track)}
+.maploc{position:absolute;right:12px;bottom:12px;z-index:500;display:flex;align-items:center;gap:6px;
+  padding:10px 14px;border-radius:14px;background:var(--accent);color:#fff;font-size:13px;font-weight:800;
+  box-shadow:0 6px 18px rgba(249,120,80,.4)}
+.maploc svg{width:16px;height:16px}
+.maphint{font-size:11.5px;color:var(--ink3);text-align:center;margin-top:10px}
+.mk{background:none;border:0}
+.mkpin{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--accent);border:2.5px solid #fff;box-shadow:0 2px 7px rgba(90,60,30,.4)}
+.mkpin.p24{background:var(--bad)}
+.mkpin svg{width:16px;height:16px;color:#fff}
+.mkme{display:block;width:18px;height:18px;border-radius:50%;background:#2f83ff;border:3px solid #fff;box-shadow:0 0 0 5px rgba(47,131,255,.28)}
+.mpop{min-width:150px;font-family:inherit}
+.mpop b{display:block;font-size:14px;font-weight:800;color:#2b2118}
+.mpop span{display:block;font-size:12px;color:#7d6c5c;margin-top:2px}
+.mpop-btns{display:flex;gap:6px;margin-top:9px}
+.mpop-btns button{flex:1;padding:8px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;border:0}
+.mpop-btns .pdetail{background:#f97850;color:#fff}
+.mpop-btns .pnaver{background:#03c75a;color:#fff}
+.leaflet-popup-content-wrapper{border-radius:14px}
+.leaflet-popup-content{margin:12px 14px}
 
 /* PLUS */
 .plus-tag{display:inline-flex;align-items:center;background:var(--warn-bg);color:var(--warn-tx);border-radius:999px;font-size:10px;font-weight:800;padding:3px 8px;letter-spacing:.05em;font-family:"Pretendard Variable",sans-serif;vertical-align:2px}
@@ -484,6 +512,7 @@ let GUGUN = null, GUGUN_P = null;         // gugun price stats
 const HOSP = {};                          // per-sido hospital lists
 let hospShown = 40, hospQuery = "", hospGugunF = "";
 let myPos = null, geoSort = false, geoBusy = false, hosp24 = false, favView = false;
+let hospView = "list", hmap = null, hmapLayer = null, LEAFLET_P = null;
 
 function loadGugun(){
   if (GUGUN || GUGUN_P) return GUGUN_P || Promise.resolve();
@@ -831,10 +860,20 @@ function renderHospParts(){
 
   function paint(entries, label, cross){
     if (geoSort && myPos) entries = entries.slice().sort((a,b) => distKm(a[1]) - distKm(b[1]));
-    const shown = entries.slice(0, hospShown);
+    const head = `<div class="listhead"><span class="count-cap">${label} · ${won(entries.length)}곳${geoSort && myPos ? " · 가까운 순" : ""}</span>
+      <div class="viewseg"><button class="${hospView==="list"?"on":""}" onclick="setHospView('list')">${IC.hosp}목록</button><button class="${hospView==="map"?"on":""}" onclick="setHospView('map')">${IC.pin}지도</button></div></div>`;
     el("hList").className = "";
-    el("hList").innerHTML =
-      `<div class="count-cap">${label} · ${won(entries.length)}곳${geoSort && myPos ? " · 가까운 순" : ""}</div>` +
+    if (hospView === "map") {
+      const withGeo = entries.filter(e => e[1][5]).length;
+      el("hList").innerHTML = head +
+        `<div class="mapwrap"><div id="hmap"></div>
+          <button class="maploc" onclick="geoNear()">${IC.loc}${myPos ? "내 위치" : "위치 켜기"}</button></div>
+        <div class="maphint">가까운 ${Math.min(120, withGeo)}곳을 지도에 표시했어요${myPos ? "" : " · '위치 켜기'로 내 주변을 볼 수 있어요"}</div>`;
+      initHMap(entries);
+      return;
+    }
+    const shown = entries.slice(0, hospShown);
+    el("hList").innerHTML = head +
       (shown.length ? shown.map(([cd, h]) => {
         const idx = HOSP[cd].indexOf(h), km = distKm(h), fav = isFav(cd, h);
         return `<button class="hrow" onclick="openHosp(${idx},'${cd}')">
@@ -897,6 +936,58 @@ function geoNear(){
     geoBusy = false; renderHospParts();
     alert("위치를 가져오지 못했어요. 브라우저 위치 권한을 확인해 주세요.");
   }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+}
+function setHospView(v){ hospView = v; renderHospParts(); }
+
+/* ── map (Leaflet + OpenStreetMap, lazy-loaded) ── */
+function loadLeaflet(){
+  if (window.L) return Promise.resolve();
+  if (LEAFLET_P) return LEAFLET_P;
+  LEAFLET_P = new Promise((res, rej) => {
+    const css = document.createElement("link");
+    css.rel = "stylesheet"; css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(css);
+    const s = document.createElement("script");
+    s.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    s.onload = res; s.onerror = rej; document.head.appendChild(s);
+  });
+  return LEAFLET_P;
+}
+function pawIcon(h){ return L.divIcon({ className: "mk", html: `<span class="mkpin${is24(h) ? " p24" : ""}">${IC.paw}</span>`, iconSize: [32,32], iconAnchor: [16,16], popupAnchor: [0,-14] }); }
+function meIcon(){ return L.divIcon({ className: "mk", html: `<span class="mkme"></span>`, iconSize: [18,18], iconAnchor: [9,9] }); }
+function mpop(cd, h){
+  const idx = HOSP[cd].indexOf(h), km = distKm(h);
+  return `<div class="mpop"><b>${esc(h[0])}${is24(h) ? " · 24시" : ""}</b><span>${esc(h[2])}${km < Infinity ? " · " + fmtKm(km) : ""}</span>
+    <div class="mpop-btns"><button class="pdetail" onclick="openHosp(${idx},'${cd}')">상세</button><button class="pnaver" onclick="openNaver(${idx},'${cd}')">네이버</button></div></div>`;
+}
+function initHMap(entries){
+  loadLeaflet().then(() => {
+    const el = document.getElementById("hmap");
+    if (!el || S.tab !== "hosp") return;
+    if (!hmap || hmap._container !== el) {
+      if (hmap) { hmap.remove(); hmap = null; }
+      hmap = L.map(el, { zoomControl: true, attributionControl: true });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(hmap);
+    }
+    if (hmapLayer) hmapLayer.remove();
+    hmapLayer = L.layerGroup().addTo(hmap);
+    const pts = [];
+    entries.filter(e => e[1][5]).slice(0, 120).forEach(([cd, h]) => {
+      L.marker([h[5], h[6]], { icon: pawIcon(h) }).addTo(hmapLayer).bindPopup(mpop(cd, h));
+      pts.push([h[5], h[6]]);
+    });
+    if (myPos) {
+      L.marker([myPos.lat, myPos.lng], { icon: meIcon(), zIndexOffset: 1000 }).addTo(hmapLayer).bindPopup("내 위치");
+      pts.push([myPos.lat, myPos.lng]);
+    }
+    if (pts.length) hmap.fitBounds(pts, { padding: [34,34], maxZoom: 15 });
+    else hmap.setView([36.5, 127.8], 7);
+    setTimeout(() => hmap && hmap.invalidateSize(), 120);
+  }).catch(() => {
+    const el = document.getElementById("hmap");
+    if (el) el.innerHTML = `<div class="empty">지도를 불러오지 못했어요.<br>네트워크 연결을 확인해 주세요.</div>`;
+  });
 }
 
 function openHosp(i, cd){
