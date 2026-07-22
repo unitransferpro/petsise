@@ -293,6 +293,32 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 .t3 .rg{font-size:13.5px;font-weight:700;margin-top:3px}
 .t3 .rp{font-size:12px;font-weight:700;color:var(--ink2);margin-top:2px}
 .t3.here{outline:2px solid var(--accent);background:var(--accent-bg)}
+/* procedure info card on detail */
+.pinfo{margin-top:14px;padding:14px 15px;border-radius:16px;background:var(--track)}
+.pinfo-h{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:var(--ink);margin-bottom:7px}
+.pinfo-h svg{width:15px;height:15px;color:var(--accent)}
+.pinfo p{font-size:12.5px;line-height:1.6;color:var(--ink2);word-break:keep-all}
+.pinfo-n{color:var(--ink3);margin-top:3px}
+/* care guide */
+.topic-list{display:flex;flex-direction:column}
+.topic{width:100%;display:flex;align-items:center;gap:13px;padding:13px 6px;text-align:left;border-bottom:1px solid var(--row-line)}
+.topic:last-child{border-bottom:0}
+.topic:active{transform:scale(.99)}
+.topic-ic{flex:0 0 42px;height:42px;border-radius:14px;background:var(--accent-bg);display:grid;place-items:center}
+.topic-ic svg{width:21px;height:21px;color:var(--accent)}
+.topic-ic.big{flex-basis:48px;height:48px;border-radius:16px}
+.topic-ic.big svg{width:24px;height:24px}
+.topic-bd{flex:1;min-width:0}
+.topic-t{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+.topic-s{display:block;font-size:12px;color:var(--ink3);margin-top:2px}
+.topic-go{color:var(--ink3);flex:0 0 auto}.topic-go svg{width:18px;height:18px}
+.topic-head{display:flex;align-items:center;gap:13px;margin-bottom:6px}
+.topic-head h2{font-size:19px}
+.tips{margin:14px 0 4px}
+.tip{display:flex;gap:11px;align-items:flex-start;padding:10px 2px;font-size:13.5px;line-height:1.6;color:var(--ink);word-break:keep-all;border-bottom:1px solid var(--row-line)}
+.tip:last-child{border-bottom:0}
+.tip-dot{flex:0 0 20px;height:20px;border-radius:7px;background:var(--accent-bg);display:grid;place-items:center;margin-top:1px}
+.tip-dot svg{width:12px;height:12px;color:var(--accent)}
 /* list/map view toggle + leaflet map */
 .listhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .viewseg{display:flex;padding:3px;border-radius:12px;background:var(--track);gap:2px;flex:0 0 auto}
@@ -570,6 +596,87 @@ const COUNT = {"43":183,"42":169,"28":259,"45":220,"48":365,"44":298,"29":130,"4
 // 연간 기본 관리 루틴 (성견/성묘 기준, 추정). 각 항목: [항목명, 연 횟수, 설명]
 const CARE_DOG = [["종합백신(개)",1,"성견 연 1회 추가접종"],["광견병백신",1,"연 1회"],["심장사상충 예방",12,"매달 1회"],["외부기생충 예방",12,"매달 1회"],["초진 진찰료",1,"건강검진 방문"],["전혈구 검사·판독",1,"건강검진 기본 혈액"]];
 const CARE_CAT = [["종합백신(고양이)",1,"성묘 연 1회 추가접종"],["광견병백신",1,"연 1회"],["외부기생충 예방",12,"매달 1회"],["초진 진찰료",1,"건강검진 방문"],["전혈구 검사·판독",1,"건강검진 기본 혈액"]];
+// 반려동물 케어 가이드 (일반적인 수의 상식 기반, 진단·처방 아님) — [아이콘키, 제목, 요약, [팁...]]
+const CARE_GUIDE = [
+  ["syr","예방접종 스케줄","기초접종과 매년 추가접종",[
+    "강아지: 생후 6~8주부터 종합백신(DHPPL 등) 2~4주 간격으로 4~5회 기초접종, 이후 매년 추가접종해요.",
+    "고양이: 3종 종합백신을 생후 8주부터 3~4주 간격 2~3회, 이후 매년 접종해요.",
+    "광견병: 생후 3개월 이후 접종, 연 1회 권장. 봄·가을에 무료·할인 접종을 운영하는 지자체가 많아요.",
+    "켄넬코프·인플루엔자 백신은 애견카페·호텔·산책이 잦은 아이에게 권장돼요.",
+    "접종 후 1~2일 미열·기력저하는 흔해요. 얼굴 부음·구토·심한 무기력은 바로 병원에 가세요."]],
+  ["shield","심장사상충·기생충 예방","치료보다 예방이 훨씬 싸요",[
+    "심장사상충은 모기가 옮기고, 감염되면 치료가 어렵고 비용이 커요. 예방이 핵심이에요.",
+    "매달 1회 예방약(먹는약·바르는약·주사)을 연중 투여하는 걸 권장해요. 실내 모기도 있어 겨울도 안심 못 해요.",
+    "진드기·벼룩 같은 외부기생충도 매달 예방해요. 진드기는 사람에게도 병을 옮길 수 있어요.",
+    "회충·촌충 같은 내부기생충은 분기마다 또는 수의사 권고에 따라 구충해요.",
+    "첫 예방약 투여 전에는 심장사상충 감염 검사를 먼저 받는 게 안전해요."]],
+  ["cross","중성화 수술","질병 예방과 행동 안정",[
+    "생식기 질환, 유선종양, 자궁축농증 위험을 낮추고 일부 문제행동도 줄여줘요.",
+    "시기는 품종·크기에 따라 다르지만 보통 생후 6개월 전후예요. 수의사와 상담해 정하세요.",
+    "수술 후에는 넥카라를 씌우고 핥지 못하게 해 상처를 관리해요.",
+    "암컷은 첫 발정 전 중성화가 유선종양 예방에 특히 도움이 된다고 알려져 있어요."]],
+  ["tooth","치아·구강 관리","3세면 대부분 치주질환",[
+    "3세 이상 반려동물의 상당수가 치주질환을 겪어요. 방치하면 발치나 전신마취 스케일링이 필요해질 수 있어요.",
+    "반려동물 전용 칫솔·치약으로 매일 또는 주 2~3회 양치해 주세요.",
+    "사람 치약은 쓰면 안 돼요. 특히 자일리톨은 반려동물에게 위험해요.",
+    "구취, 치석, 잇몸 출혈, 한쪽으로만 씹기는 진료가 필요한 신호예요."]],
+  ["bowl","영양·체중 관리","비만은 만병의 시작",[
+    "나이·크기에 맞는 사료를 고르고, 급여량은 포장 기준을 참고하되 체형을 보고 조절하세요.",
+    "갈비뼈가 살짝 만져지는 정도가 적정 체형이에요. 비만은 관절·당뇨·심장에 부담을 줘요.",
+    "초콜릿·포도·건포도·양파·마늘·자일리톨·마카다미아는 중독을 일으킬 수 있으니 절대 주지 마세요.",
+    "사료를 바꿀 때는 1주에 걸쳐 서서히 섞어 바꿔야 설사를 막을 수 있어요.",
+    "신선한 물을 늘 준비해 주세요. 음수량이 갑자기 늘거나 줄면 검진이 필요해요."]],
+  ["siren","응급 신호 (바로 병원)","이 증상은 지체하지 마세요",[
+    "호흡이 힘들거나 잇몸이 창백·파랗게 변할 때.",
+    "반복 구토·설사, 특히 피가 섞인 경우.",
+    "배가 갑자기 빵빵하게 부풀 때(위염전 의심, 대형견 응급).",
+    "수컷 고양이가 소변을 못 볼 때(요로폐색, 생명 위협).",
+    "경련·의식저하, 중독 물질 섭취, 심한 외상·출혈, 갑작스런 실명.",
+    "위 증상은 24시·응급 동물병원으로 바로 가세요. 병원 탭에서 24시 필터로 찾을 수 있어요."]],
+  ["clock","노령 관리 (7세+)","조기발견이 비용을 줄여요",[
+    "7세 이상은 반기 1회 건강검진(혈액·소변·영상)을 권장해요. 병을 일찍 찾으면 치료비도 줄어요.",
+    "관절 건강을 위해 체중을 관리하고 미끄러운 바닥·높은 점프를 줄여 주세요.",
+    "음수량·배뇨 변화, 체중 감소, 활동성 저하는 눈여겨 보세요.",
+    "노령기에는 통증을 잘 숨겨요. 평소와 다른 행동은 기록해 진료 때 알려주세요."]],
+  ["calc","병원비 아끼는 법","알면 새는 돈을 막아요",[
+    "예방(접종·심장사상충·양치)이 치료보다 훨씬 저렴해요. 정기검진으로 조기에 잡으세요.",
+    "2023년부터 진료비 게시가 의무예요. 진료 전 게시 비용을 확인하는 건 소비자 권리예요.",
+    "펫시세로 우리 지역 평균과 비교하고, 큰 검사(CT·MRI)나 수술은 미리 견적·설명을 요청하세요.",
+    "야간·응급 진료는 할증이 붙어요. 급하지 않다면 낮 시간 진료가 유리해요.",
+    "펫보험이나 병원 멤버십도 자주 가는 병원이라면 검토해 볼 만해요."]],
+  ["id","동물등록 (법적 의무)","2개월령부터 등록 대상",[
+    "생후 2개월 이상 반려견은 동물등록이 법적 의무예요. 미등록 시 과태료가 부과돼요.",
+    "내장형 마이크로칩 또는 외장형 인식표로 등록할 수 있어요.",
+    "시·군·구청이나 등록대행 동물병원에서 등록해요. 주소·연락처가 바뀌면 변경 신고하세요.",
+    "등록해 두면 잃어버렸을 때 다시 만날 확률이 훨씬 높아져요."]],
+  ["paw","새 가족 맞이 체크리스트","입양 첫 주가 중요해요",[
+    "입양 후 1주 안에 병원에 가서 건강검진, 기생충 확인, 접종 계획을 상담하세요.",
+    "첫 1~2주는 적응기예요. 조용한 공간을 주고 먹던 사료를 유지해 스트레스를 줄여요.",
+    "예방접종을 마치기 전에는 외부 산책이나 다른 동물과의 접촉을 자제하는 게 좋아요.",
+    "이름·기본 명령어는 짧고 긍정적으로. 간식 보상으로 천천히 신뢰를 쌓아요."]]
+];
+// 진료 항목 설명 (기준명으로 매칭)
+const PROC_INFO = {
+  "초진 진찰료":{w:"처음 방문했을 때의 기본 진찰 비용이에요.",n:"같은 병으로 다시 오면 보통 재진(더 저렴)으로 봐요."},
+  "재진 진찰료":{w:"같은 질환으로 다시 방문했을 때의 진찰 비용이에요.",n:"초진보다 대체로 낮아요."},
+  "상담료":{w:"진료 처치 없이 상담만 받을 때의 비용이에요.",n:"사료·행동·예방 상담 등이 해당돼요."},
+  "입원비":{w:"하루 입원 기준 비용이에요.",n:"처치·약제·검사비는 대개 따로 청구돼요."},
+  "종합백신":{w:"여러 전염병을 한 번에 예방하는 혼합백신이에요(개 DHPPL, 고양이 3종 등).",n:"기초접종 후 매년 추가접종해요."},
+  "광견병백신":{w:"광견병을 예방하는 백신이에요.",n:"연 1회 권장, 지자체 무료·할인 접종을 활용하면 저렴해요."},
+  "켄넬코프백신":{w:"전염성 기관지염(개기침)을 예방해요.",n:"애견카페·호텔·미용 이용이 잦으면 권장돼요."},
+  "코로나바이러스백신":{w:"개 장염을 일으키는 코로나바이러스 예방이에요(사람 코로나와 무관).",n:"어린 강아지에게 주로 접종해요."},
+  "인플루엔자백신":{w:"개 독감(인플루엔자)을 예방해요.",n:"단체생활·환절기 노출이 많으면 도움이 돼요."},
+  "전혈구 검사·판독":{w:"적혈구·백혈구·혈소판을 세는 기본 혈액검사(CBC)예요.",n:"빈혈·감염·염증을 확인하는 첫 단계예요."},
+  "혈액화학 검사·판독":{w:"간·신장 등 장기 기능을 보는 혈액검사예요.",n:"건강검진과 마취 전 평가에 많이 해요."},
+  "전해질 검사·판독":{w:"나트륨·칼륨 등 전해질 균형을 확인해요.",n:"탈수·구토·신장 상태 평가에 쓰여요."},
+  "엑스선 촬영·판독":{w:"뼈와 가슴·배를 보는 기본 영상검사예요.",n:"골절·결석·심장 크기 등을 확인해요."},
+  "초음파 검사·판독":{w:"배 속 장기나 심장을 실시간으로 보는 검사예요.",n:"방사선이 없어 반복검사에 부담이 적어요."},
+  "CT 촬영·판독":{w:"정밀 단층촬영이에요(종양·복잡골절 등).",n:"대개 마취가 필요하고 비용이 높아요."},
+  "MRI 촬영·판독":{w:"뇌·척수·연부조직을 정밀하게 보는 검사예요.",n:"마취가 필요하고 가장 비싼 검사 중 하나예요."},
+  "심장사상충 예방":{w:"모기가 옮기는 심장사상충을 월 1회 예방해요.",n:"연중 투여를 권장해요."},
+  "외부기생충 예방":{w:"진드기·벼룩 같은 외부기생충을 예방해요.",n:"매달 1회가 기본이에요."},
+  "광범위 구충":{w:"회충·촌충 등 내부기생충을 구충해요.",n:"분기별 또는 수의사 권고에 따라요."}
+};
 const VERSION = "2.0.0";
 const SRC_DATE = "2026-07-22";
 const HOSP_DATE = "2025-11-27";
@@ -701,7 +808,14 @@ const IC = {
   loc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
   clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>',
   star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
-  starf:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>'
+  starf:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+  book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/><path d="M9 7h6M9 10h4"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>',
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>',
+  tooth:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3c-2 0-3.6 1.6-3.6 4.2 0 2 .6 3 .9 5.3.4 3.6.9 8.5 2.4 8.5 1.3 0 1-3.4 2.6-3.4s1.3 3.4 2.6 3.4c1.5 0 2-4.9 2.4-8.5.3-2.3.9-3.3.9-5.3C18.5 4.6 16.9 3 14.9 3c-1.5 0-2.1 .9-3.5.9S9.5 3 8 3Z"/></svg>',
+  bowl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 11h19a9.5 9.5 0 0 1-19 0Z"/><path d="M12 11c0-3 3-3 3-5.5S13 3 12 3"/></svg>',
+  siren:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15a6 6 0 0 1 12 0v3H6z"/><path d="M4 21h16"/><path d="M12 3v2.5M4.5 6.5 6 8M19.5 6.5 18 8"/></svg>',
+  id:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M5.8 16c.6-1.3 1.8-2 3.2-2s2.6.7 3.2 2"/><path d="M15 10h4M15 13h3"/></svg>'
 };
 
 /* custom vector mascots (no emoji) */
@@ -739,7 +853,7 @@ const CAT_SVG = '<svg class="pet" viewBox="0 0 96 66" width="88" height="60" ari
  + '</svg>';
 
 /* ───────── router / dock ───────── */
-const TABS = [["home","홈",IC.home],["price","시세",IC.price],["hosp","병원",IC.hosp],["calc","계산기",IC.calc],["set","설정",IC.set]];
+const TABS = [["home","홈",IC.home],["price","시세",IC.price],["hosp","병원",IC.hosp],["care","케어",IC.book],["calc","계산기",IC.calc],["set","설정",IC.set]];
 function go(tab){ S.tab = tab; save(); closeSheet(); render(); window.scrollTo(0,0); }
 function renderDock(){
   document.getElementById("dock").innerHTML = TABS.map(([id, label, ic]) =>
@@ -884,6 +998,7 @@ function renderDetail(){
   const span = Math.max(1, a[3] - a[0]);
   const pos = v => Math.max(2, Math.min(98, (v - a[0]) / span * 100)).toFixed(1);
   const natIn = nat.v >= a[0] && nat.v <= a[3];
+  const pinfo = procInfo(S.name);
   // national ranking (1 = cheapest); exclude regions with no survey data (avg 0)
   const ranked = Object.keys(it.r).map(cd => [cd, it.r[cd][1]]).filter(x => x[1] > 0).sort((x,y) => x[1] - y[1]);
   const N = ranked.length;
@@ -918,7 +1033,11 @@ function renderDetail(){
       <div class="t3row">${ranked.slice(0,3).map(([cd,val],i) =>
         `<div class="t3${cd===S.region?" here":""}" onclick="pickRegion('${cd}')">
           <div class="r">${i+1}위</div><div class="rg">${SHORT[cd]}</div><div class="rp">${compact(val)}원</div></div>`).join("")}</div>
-    </div>`;
+    </div>
+    ${pinfo ? `<div class="pinfo">
+      <div class="pinfo-h">${IC.info} 이 진료가 뭐예요?</div>
+      <p>${pinfo.w}</p><p class="pinfo-n">${pinfo.n}</p>
+    </div>` : ""}`;
 }
 function renderList(){
   document.getElementById("listTitle").textContent = `${D.sido[S.region]} 전체 항목`;
@@ -1201,6 +1320,44 @@ function openCare(){
   document.getElementById("sheetBg").classList.add("show");
   document.getElementById("sheet").classList.add("show");
 }
+/* ───────── CARE GUIDE ───────── */
+function procInfo(name){ const base = name.replace(/\(.+\)/, ""); return PROC_INFO[base] || PROC_INFO[name] || null; }
+function vCare(){
+  const cards = CARE_GUIDE.map((t, i) =>
+    `<button class="topic" onclick="openTopic(${i})">
+      <span class="topic-ic">${IC[t[0]] || IC.paw}</span>
+      <span class="topic-bd"><span class="topic-t">${t[1]}</span><span class="topic-s">${t[2]}</span></span>
+      <span class="topic-go">${IC.chev}</span>
+    </button>`).join("");
+  return `<div class="screen">
+    <section class="hero" style="padding-bottom:2px">
+      <span class="eyebrow">반려생활 케어 가이드</span>
+      <h1>우리 아이,<br>이렇게 돌봐 주세요</h1>
+      <p>예방접종부터 응급 신호까지, 꼭 알아두면 좋은 기본기를 모았어요.</p>
+    </section>
+    <section class="card"><div class="topic-list">${cards}</div></section>
+    <section class="card" style="background:var(--accent-bg);border-color:transparent">
+      <div class="sec-t plain">${IC.info} 이 가이드는 참고용이에요</div>
+      <p style="font-size:12.5px;line-height:1.7;color:var(--ink2);word-break:keep-all;margin-top:8px">
+        일반적인 반려동물 관리 정보예요. 우리 아이의 진단·치료·약 처방은 반드시 수의사와 상담해 주세요.
+        증상이 급하면 병원 탭에서 24시·응급 병원을 찾을 수 있어요.</p>
+    </section>
+    ${footHtml()}
+  </div>`;
+}
+function openTopic(i){
+  const t = CARE_GUIDE[i];
+  const tips = t[3].map(x => `<div class="tip"><span class="tip-dot">${IC.paw}</span><span>${x}</span></div>`).join("");
+  document.getElementById("sheet").innerHTML = `
+    <div class="grip"></div>
+    <div class="topic-head"><span class="topic-ic big">${IC[t[0]] || IC.paw}</span>
+      <div><h2>${t[1]}</h2><div class="sub">${t[2]}</div></div></div>
+    <div class="tips">${tips}</div>
+    <p class="note">일반적인 관리 정보예요. 진단·처방은 수의사와 상담하세요.</p>
+    <button class="plus-btn" onclick="closeSheet();go('hosp')">가까운 동물병원 찾기</button>`;
+  document.getElementById("sheetBg").classList.add("show");
+  document.getElementById("sheet").classList.add("show");
+}
 function activatePlus(){ S.plus = true; save(); closeSheet(); render(); }
 function stopPlus(){ S.plus = false; if (S.gugun) S.gugun = ""; save(); render(); }
 
@@ -1327,6 +1484,7 @@ function render(){
   if (S.tab === "home") v.innerHTML = vHome();
   else if (S.tab === "price") { v.innerHTML = vPrice(); renderPriceParts(); }
   else if (S.tab === "hosp") { v.innerHTML = vHosp(); renderHospParts(); }
+  else if (S.tab === "care") v.innerHTML = vCare();
   else if (S.tab === "calc") v.innerHTML = vCalc();
   else v.innerHTML = vSet();
   document.getElementById("pillRegion").textContent = SHORT[S.region] + (S.gugun ? " · " + S.gugun : "");
