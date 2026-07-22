@@ -460,11 +460,9 @@ function natOf(it){
 }
 // pick the variant of a group matching pet profile
 function variantOf(g){
-  let vs = g.vars;
+  const vs = g.vars;
   if (vs.length === 1) return vs[0];
-  if (g.vars.some(v => /고양이/.test(v.name))) {} // cat/dog split lives at name level, not variant
-  const byWt = vs.find(v => v.wt === S.wt);
-  return byWt || vs[0];
+  return vs.find(v => v.wt === S.wt) || vs[0];
 }
 // preferred item names for the pet
 const petName = base => {
@@ -755,10 +753,12 @@ function openHosp(i){
   const h = (HOSP[S.region] || [])[i]; if (!h) return;
   const gg = h[1];
   const render_ = () => {
+    const hasGu = S.plus && GUGUN && GUGUN[S.region] && !!GUGUN[S.region][gg];
+    const priceArea = hasGu ? gg : D.sido[S.region];
     const rows = CATS.map(cat => {
       const items = namesByCat(cat).map(n => {
         const v = variantOf(GROUPS[n]);
-        const g = S.plus ? gugunStat(S.region, gg, v) : null;
+        const g = hasGu ? gugunStat(S.region, gg, v) : null;
         const sido = v.r[S.region];
         const a = g || sido, isGu = !!g;
         return `<div class="row" style="cursor:default">
@@ -777,11 +777,11 @@ function openHosp(i){
         <a class="act-map" href="${naverUrl(h)}" target="_blank" rel="noopener">${IC.pin}네이버 지도</a>
         <button class="act-copy" onclick="copyAddr('${esc(D.sido[S.region] + " " + h[2])}')">복사</button>
       </div>
-      <div class="sec-t" style="margin-top:6px">${S.plus ? gg : D.sido[S.region]} 시세 참고</div>
+      <div class="sec-t" style="margin-top:6px">${priceArea} 시세 참고</div>
       <div class="sec-s">공시 조사 통계예요. 이 병원의 실제 가격은 병원에 게시된 비용을 확인하세요.</div>
-      ${S.plus ? "" : `<button class="plus-banner" onclick="closeSheet();openPlus()">🔒 ${gg} 동네 시세는 PLUS에서 볼 수 있어요 — 지금은 시도 평균이에요</button>`}
+      ${!S.plus && GUGUN && GUGUN[S.region] && GUGUN[S.region][gg] ? `<button class="plus-banner" onclick="closeSheet();openPlus()">${IC.paw} ${gg} 동네 시세는 PLUS에서 볼 수 있어요 — 지금은 시도 평균이에요</button>` : ""}
       ${rows}
-      <p class="note">병원별 개별 가격은 법적으로 각 병원 안에 게시돼요. 여기 표시된 값은 ${S.plus && GUGUN && GUGUN[S.region] && GUGUN[S.region][gg] ? gg : D.sido[S.region]} 지역의 조사 평균입니다.</p>`;
+      <p class="note">병원별 개별 가격은 법적으로 각 병원 안에 게시돼요. 여기 표시된 값은 ${priceArea} 지역의 조사 평균입니다.</p>`;
     document.getElementById("sheetBg").classList.add("show");
     document.getElementById("sheet").classList.add("show");
   };
