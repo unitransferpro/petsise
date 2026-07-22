@@ -349,6 +349,44 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 .ldel:active{color:var(--bad)}
 .addtask{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;padding:12px;border-radius:14px;background:var(--track);font-size:13px;font-weight:700;color:var(--ink2)}
 .addtask svg{width:15px;height:15px}
+/* score ring + cards */
+.score-ring{position:relative;flex:0 0 auto}
+.score-ring svg{display:block}
+.ring-arc{transition:stroke-dashoffset .9s cubic-bezier(.3,1,.3,1)}
+.ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.ring-c b{font-family:var(--cute);font-size:21px;font-weight:400}
+.ring-c span{font-size:9.5px;font-weight:700;color:var(--ink3);margin-top:2px}
+.score-log{display:flex;align-items:center;gap:16px}
+.sl-info{flex:1;min-width:0}
+.sl-grade{font-family:var(--cute);font-size:18px}
+.sl-name{font-size:12.5px;color:var(--ink3);margin-top:1px}
+.sl-counts{font-size:12.5px;color:var(--ink2);margin-top:7px}
+.sl-tip{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2);margin-top:8px;background:var(--track);padding:6px 10px;border-radius:10px}
+.sl-tip svg{width:13px;height:13px;color:var(--accent);flex:0 0 auto}
+.sl-tip.ok svg{color:var(--good)}
+.sl-tip b{color:var(--accent)}
+.score-home{display:flex;align-items:center;gap:14px;cursor:pointer}
+.sh-info{flex:1;min-width:0}
+.sh-t{font-size:14px;font-weight:700}
+.sh-t b{font-family:var(--cute);font-weight:400;margin-left:3px}
+.sh-s{font-size:12px;color:var(--ink3);margin-top:3px}
+/* onboarding */
+#onboard{position:fixed;inset:0;z-index:80;display:none}
+#onboard.show{display:block}
+.ob-wrap{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:radial-gradient(120% 40% at 100% 0%,rgba(255,178,127,.12),transparent 55%),var(--bg)}
+.ob-card{max-width:440px;margin:0 auto;padding:calc(38px + env(safe-area-inset-top)) 22px calc(40px + env(safe-area-inset-bottom))}
+.ob-logo{display:flex;align-items:center;gap:7px;font-family:var(--cute);font-size:21px;color:var(--accent);margin-bottom:20px}
+.ob-logo .bpaw{display:inline-flex}.ob-logo .bpaw svg{width:20px;height:20px;color:var(--accent)}
+.ob-title{font-family:var(--cute);font-weight:400;font-size:26px;letter-spacing:-.01em;line-height:1.25}
+.ob-sub{font-size:14px;color:var(--ink2);margin-top:8px}
+.ob-l{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin:18px 0 8px}
+.ob-l em{font-style:normal;font-weight:500;color:var(--ink3)}
+.ob-seg{display:flex;gap:8px}
+.ob-seg button{flex:1;padding:13px;border-radius:14px;background:var(--chip-bg);border:1.5px solid var(--glass-line);font-size:14px;font-weight:700;color:var(--ink2);transition:background .15s,color .15s,box-shadow .15s}
+.ob-seg button.on{background:var(--accent);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(249,120,80,.3)}
+.ob-skip{width:100%;padding:13px;margin-top:8px;font-size:13px;font-weight:700;color:var(--ink3)}
+select.search{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23a8988a' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px}
 .ltask.due,.ltask.todo{margin:0 -6px;padding:12px 6px;background:var(--bad-bg);border-radius:12px;border-bottom:0}
 .ltask.due+.ltask:not(.due):not(.todo),.ltask.new{border-top:1px solid var(--row-line)}
 /* list/map view toggle + leaflet map */
@@ -615,6 +653,7 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 
 <div class="sheet-bg" id="sheetBg" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+<div id="onboard"></div>
 
 <script src="data.js?v=2"></script>
 <script>
@@ -732,6 +771,7 @@ const namesByCat = c => Object.keys(GROUPS).filter(n => GROUPS[n].cat === c);
 
 /* ───────── state ───────── */
 let S = {tab:"home", region:"11", gugun:"", pet:"dog", wt:"5kg", theme:"light", plus:false, fav:[],
+         onboarded:false, petName:"", petBirth:"", petSex:"", neutered:null,
          log:{}, customTasks:[],
          cat:"진찰료", name:"초진 진찰료", calc:["초진 진찰료","종합백신(개)"]};
 try { S = Object.assign(S, JSON.parse(localStorage.getItem("petsise2") || "{}")); } catch(e){}
@@ -916,6 +956,7 @@ function vHome(){
   const greet = h < 6 ? "늦은 밤이에요" : h < 12 ? "좋은 아침이에요" : h < 18 ? "좋은 오후예요" : "좋은 저녁이에요";
   const phase = h < 5 ? "night" : h < 8 ? "dawn" : h < 17 ? "day" : h < 20 ? "dusk" : "night";
   const areaLabel = (S.plus && S.gugun) ? S.gugun : D.sido[S.region];
+  const sc = careScore(), age = petAgeStr();
   const picks = [petName("종합백신"), "초진 진찰료", "심장사상충 예방", "전혈구 검사·판독"];
   const picon = [IC.syr, IC.cross, IC.heart, IC.drop];
   const cards = picks.map((n, pi) => {
@@ -929,8 +970,8 @@ function vHome(){
   return `<div class="screen">
     <section class="hero">
       <span class="eyebrow">농림축산식품부 공식 공개 데이터</span>
-      <h1>${greet},<br>${D.sido[S.region]}${S.gugun ? " " + S.gugun : ""} 보호자님</h1>
-      <p>${S.pet === "cat" ? "고양이" : "강아지"}${S.pet === "dog" ? " (" + S.wt + " 기준)" : ""} 프로필로 우리 동네 시세를 보여드려요.</p>
+      <h1>${greet},<br>${S.petName ? esc(S.petName) + " 보호자님" : D.sido[S.region] + " 보호자님"}</h1>
+      <p>${S.petName ? esc(S.petName) + "의 " : ""}우리 동네 시세와 케어를 한눈에 챙겨요.</p>
     </section>
     <section class="card" style="padding:14px">
       <div class="scene ${phase}">
@@ -942,10 +983,18 @@ function vHome(){
         <span class="walker"><span class="shadow"></span><span class="gait">${S.pet === "cat" ? CAT_SVG : DOG_SVG}</span></span>
       </div>
       <div class="scene-cap">
-        <span class="pchip">${S.pet === "cat" ? "고양이" : "강아지"}${S.pet === "dog" ? " · " + S.wt : ""}</span>
+        <span class="pchip">${S.petName ? esc(S.petName) : (S.pet === "cat" ? "고양이" : "강아지")}${age ? " · " + age : ""}</span>
         <button class="pchip tap" onclick="go('hosp')">동물병원 ${won(COUNT[S.region])}곳 ›</button>
-        <button class="pedit" onclick="go('set')">프로필 바꾸기</button>
+        <button class="pedit" onclick="showOnboard(true)">프로필 편집</button>
       </div>
+    </section>
+    <section class="card score-home" role="button" tabindex="0" onclick="go('log')">
+      ${scoreRing(sc.score, sc.color, 62)}
+      <div class="sh-info">
+        <div class="sh-t">${S.petName ? esc(S.petName) + "의" : "우리 아이"} 케어 점수 <b style="color:${sc.color}">${sc.score}점</b></div>
+        <div class="sh-s">${sc.tips[0] ? sc.tips[0].name + " 기록하면 +" + sc.tips[0].gain + "점" : sc.grade}</div>
+      </div>
+      <span class="pgo">${IC.chev}</span>
     </section>
     <section class="card care" role="button" tabindex="0" onclick="openCare()">
       <div class="care-top">
@@ -1423,6 +1472,7 @@ function vLog(){
   const tasks = allTasks().map(t => ({t, s: taskStatus(t)})).sort((a,b) => a.s.rank - b.s.rank || (a.t.period||9999) - (b.t.period||9999));
   const due = tasks.filter(x => x.s.rank === 0).length;
   const doneToday = tasks.filter(x => x.s.k === "today").length;
+  const sc = careScore();
   const rows = tasks.map(({t, s}) => {
     const checked = S.log[t.id] === todayStr() || (t.once && S.log[t.id]);
     return `<div class="ltask ${s.k}">
@@ -1439,11 +1489,13 @@ function vLog(){
       <h1>${due > 0 ? `지금 챙길 게<br>${due}개 있어요` : "케어, 잘 챙기고<br>있어요"}</h1>
       <p>${S.pet==="cat"?"고양이":"강아지"} 예방·검진을 눌러서 기록하면 다음 시기를 알려드려요.</p>
     </section>
-    <section class="card">
-      <div class="logsum">
-        <div class="ls-item"><span class="ls-v" style="color:var(--bad)">${due}</span><span class="ls-l">지금 할 것</span></div>
-        <div class="ls-item"><span class="ls-v" style="color:var(--good)">${doneToday}</span><span class="ls-l">오늘 완료</span></div>
-        <div class="ls-item"><span class="ls-v">${allTasks().length}</span><span class="ls-l">전체 항목</span></div>
+    <section class="card score-log">
+      ${scoreRing(sc.score, sc.color, 88)}
+      <div class="sl-info">
+        <div class="sl-grade" style="color:${sc.color}">${sc.grade}</div>
+        <div class="sl-name">${S.petName ? esc(S.petName)+"의" : "우리 아이"} 케어 점수</div>
+        <div class="sl-counts">지금 할 것 <b style="color:var(--bad)">${due}</b> · 오늘 완료 <b style="color:var(--good)">${doneToday}</b></div>
+        ${sc.tips[0] ? `<div class="sl-tip">${IC.check} ${sc.tips[0].name} 기록하면 <b>+${sc.tips[0].gain}점</b></div>` : `<div class="sl-tip ok">${IC.check} 예방·검진을 잘 챙기고 있어요</div>`}
       </div>
     </section>
     <section class="card"><div id="logList">${rows}</div>
@@ -1453,6 +1505,90 @@ function vLog(){
   </div>`;
 }
 function renderLogParts(){ if (S.tab === "log") document.getElementById("view").innerHTML = vLog(); }
+
+/* ───────── PET PROFILE + CARE SCORE ───────── */
+function petAgeStr(){
+  if (!S.petBirth) return "";
+  const p = S.petBirth.split("-"), b = new Date(+p[0], (+p[1]||1)-1, 1), now = new Date();
+  let m = (now.getFullYear()-b.getFullYear())*12 + (now.getMonth()-b.getMonth());
+  if (m < 0) m = 0;
+  return m < 12 ? m + "개월" : Math.floor(m/12) + "살";
+}
+function isSenior(){ if (!S.petBirth) return false; const p = S.petBirth.split("-"); return (new Date().getFullYear() - (+p[0])) >= 7; }
+function wtTier(kg){ return kg < 7 ? "5kg" : kg < 15 ? "10kg" : "20kg"; }
+const SCORE_W = {heartworm:20,flea:10,deworm:5,vax_combo:20,vax_rabies:10,checkup:15,teeth:5,grooming:3,weight:2,register:10};
+function careScore(){
+  const total = LOG_TASKS.reduce((s,t) => s + (SCORE_W[t.id]||0), 0);
+  let earned = 0; const gaps = [];
+  LOG_TASKS.forEach(t => {
+    const w = SCORE_W[t.id]; if (!w) return;
+    let f;
+    if (t.once) f = S.log[t.id] ? 1 : 0;
+    else { const k = taskStatus(t).k; f = (k==="ok"||k==="today") ? 1 : k==="soon" ? 0.5 : k==="due" ? 0.1 : 0; }
+    earned += w * f;
+    if (f < 1) gaps.push({name:t.name, gain:Math.round(w*(1-f)/total*100)});
+  });
+  const score = Math.round(earned/total*100);
+  const g = score >= 85 ? {t:"아주 잘 크고 있어요",c:"var(--good)"} : score >= 60 ? {t:"잘 챙기고 있어요",c:"var(--good)"} :
+            score >= 35 ? {t:"조금 더 챙겨주세요",c:"var(--warn-tx)"} : {t:"관리가 필요해요",c:"var(--bad)"};
+  gaps.sort((a,b) => b.gain - a.gain);
+  return {score, grade:g.t, color:g.c, tips:gaps.filter(x => x.gain > 0).slice(0,3)};
+}
+function scoreRing(score, color, size){
+  const r = (size-12)/2, c = 2*Math.PI*r, off = c*(1 - score/100);
+  return `<div class="score-ring" style="width:${size}px;height:${size}px">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--track)" stroke-width="8"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="8" stroke-linecap="round"
+        stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})" class="ring-arc"/>
+    </svg>
+    <div class="ring-c"><b style="color:${color}">${score}</b><span>점</span></div></div>`;
+}
+
+/* ───────── ONBOARDING ───────── */
+let OB = {};
+function obPick(key, val, btn){ OB[key] = val; [...btn.parentNode.children].forEach(c => c.classList.remove("on")); btn.classList.add("on"); }
+function showOnboard(edit){
+  OB = {pet: S.pet || "dog", sex: S.petSex || "", neuter: S.neutered};
+  const seg = (key, opts) => `<div class="ob-seg">${opts.map(([v,l]) =>
+    `<button class="${OB[key]===v?"on":""}" onclick="obPick('${key}','${v}',this)">${l}</button>`).join("")}</div>`;
+  const sido = Object.keys(SHORT).map(cd => `<option value="${cd}"${cd===S.region?" selected":""}>${D.sido[cd]}</option>`).join("");
+  const el = document.getElementById("onboard");
+  el.innerHTML = `<div class="ob-wrap"><div class="ob-card">
+    <div class="ob-logo"><span class="bpaw">${IC.paw}</span>PetLog</div>
+    <h2 class="ob-title">${edit ? "반려동물 정보" : "우리 아이를 알려주세요"}</h2>
+    <p class="ob-sub">프로필에 맞춰 시세·케어 점수를 보여드려요.</p>
+    <label class="ob-l">반려동물</label>${seg("pet",[["dog","🐶 강아지"],["cat","🐱 고양이"]])}
+    <label class="ob-l">이름</label>
+    <input class="search" id="obName" type="text" maxlength="16" placeholder="예: 초코" value="${esc(S.petName||"")}">
+    <label class="ob-l">생년월 <em>(모르면 대략)</em></label>
+    <input class="search" id="obBirth" type="month" value="${S.petBirth||""}" max="${todayStr().slice(0,7)}">
+    <label class="ob-l">체중 (kg)</label>
+    <input class="search" id="obWeight" type="number" min="0" step="0.1" inputmode="decimal" placeholder="예: 5.2" value="${S.petWeight||""}">
+    <label class="ob-l">성별</label>${seg("sex",[["m","남아"],["f","여아"]])}
+    <label class="ob-l">중성화</label>${seg("neuter",[["y","했어요"],["n","안 했어요"]])}
+    <label class="ob-l">우리 지역 (시·도)</label>
+    <select class="search" id="obRegion">${sido}</select>
+    <button class="plus-btn" style="margin-top:20px" onclick="finishOnboard()">${edit ? "저장하기" : "시작하기"}</button>
+    ${edit ? `<button class="ob-skip" onclick="closeOnboard()">닫기</button>` : `<button class="ob-skip" onclick="skipOnboard()">나중에 할게요</button>`}
+  </div></div>`;
+  el.classList.add("show");
+  document.body.style.overflow = "hidden";
+}
+function readOnboard(){
+  S.pet = OB.pet || "dog";
+  S.petName = (document.getElementById("obName").value || "").trim();
+  S.petBirth = document.getElementById("obBirth").value || "";
+  const kg = parseFloat(document.getElementById("obWeight").value);
+  if (kg > 0) { S.petWeight = kg; S.wt = wtTier(kg); }
+  S.petSex = OB.sex || "";
+  S.neutered = OB.neuter === "y" ? true : OB.neuter === "n" ? false : null;
+  S.region = document.getElementById("obRegion").value || S.region;
+  S.gugun = "";
+}
+function finishOnboard(){ readOnboard(); S.onboarded = true; save(); closeOnboard(); loadGugun(); render(); }
+function skipOnboard(){ S.onboarded = true; save(); closeOnboard(); render(); }
+function closeOnboard(){ const el = document.getElementById("onboard"); el.classList.remove("show"); el.innerHTML = ""; document.body.style.overflow = ""; }
 
 /* ───────── CARE GUIDE ───────── */
 function procInfo(name){ const base = name.replace(/\(.+\)/, ""); return PROC_INFO[base] || PROC_INFO[name] || null; }
@@ -1550,7 +1686,9 @@ function vSet(){
   return `<div class="screen">
     <section class="card">
       <div class="sec-t">내 프로필</div>
-      <div class="sec-s">시세와 계산기가 이 기준으로 보여져요</div>
+      <div class="sec-s">시세와 케어 점수가 이 기준으로 보여져요</div>
+      <div class="set-row"><span class="sl">${S.petName ? esc(S.petName) : "반려동물"} 정보<small>이름 · 생년월 · 체중 · 중성화</small></span>
+        <button class="pchip tap" onclick="showOnboard(true)">편집 ›</button></div>
       <div class="set-row"><span class="sl">지역 (시/도)</span>
         <select onchange="setRegion(this.value)">${sidoOpts}</select></div>
       <div class="set-row"><span class="sl">시/군/구 ${S.plus ? "" : '<span class="plus-tag">PLUS</span>'}<small>고르면 시세·계산기가 동네 기준이 돼요</small></span>
@@ -1627,6 +1765,7 @@ function render(){
 applyTheme();
 render();
 loadGugun();
+if (!S.onboarded) showOnboard(false);
 </script>
 </body>
 </html>
