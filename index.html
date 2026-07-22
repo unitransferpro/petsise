@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>펫시세 · 동물병원 진료비 지도</title>
+<title>PetLog · 동물병원 진료비 · 케어</title>
 <meta name="description" content="농림축산식품부가 공개한 전국 동물병원 진료비를 시도·시군구별로 비교하고, 전국 5,459개 동물병원을 찾아보세요.">
 <meta name="theme-color" content="#fdf8f1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#211a14" media="(prefers-color-scheme: dark)">
@@ -319,6 +319,38 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 .tip:last-child{border-bottom:0}
 .tip-dot{flex:0 0 20px;height:20px;border-radius:7px;background:var(--accent-bg);display:grid;place-items:center;margin-top:1px}
 .tip-dot svg{width:12px;height:12px;color:var(--accent)}
+/* care log / checklist */
+.logsum{display:flex}
+.ls-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;position:relative}
+.ls-item+.ls-item::before{content:"";position:absolute;left:0;top:14%;height:72%;width:1px;background:var(--row-line)}
+.ls-v{font-family:var(--cute);font-size:26px;line-height:1}
+.ls-l{font-size:11.5px;font-weight:600;color:var(--ink3)}
+.ltask{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--row-line)}
+.ltask:last-of-type{border-bottom:0}
+.lcheck{flex:0 0 30px;height:30px;border-radius:50%;border:2px solid var(--glass-line);display:grid;place-items:center;color:transparent;transition:transform .15s cubic-bezier(.3,2,.4,1),background .15s,border-color .15s}
+.lcheck svg{width:15px;height:15px}
+.lcheck:active{transform:scale(.85)}
+.lcheck.on{background:var(--good);border-color:var(--good);color:#fff}
+.ltask.due .lcheck,.ltask.todo .lcheck{border-color:var(--bad)}
+.lbd{flex:1;min-width:0}
+.ln{display:block;font-size:14px;font-weight:700;letter-spacing:-.01em}
+.lnote{font-style:normal;font-weight:500;color:var(--ink3);font-size:11.5px;margin-left:5px}
+.lsub{display:block;font-size:12px;color:var(--ink3);margin-top:3px}
+.st{font-weight:800}
+.st-due,.st-todo{color:var(--bad)}
+.st-soon{color:var(--warn-tx)}
+.st-today,.st-done{color:var(--good)}
+.st-ok{color:var(--ink2)}
+.st-new{color:var(--accent)}
+.lic{flex:0 0 34px;height:34px;border-radius:12px;background:var(--track);display:grid;place-items:center}
+.lic svg{width:17px;height:17px;color:var(--ink3)}
+.ldel{flex:0 0 34px;height:34px;border-radius:12px;display:grid;place-items:center;color:var(--ink3)}
+.ldel svg{width:16px;height:16px}
+.ldel:active{color:var(--bad)}
+.addtask{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;padding:12px;border-radius:14px;background:var(--track);font-size:13px;font-weight:700;color:var(--ink2)}
+.addtask svg{width:15px;height:15px}
+.ltask.due,.ltask.todo{margin:0 -6px;padding:12px 6px;background:var(--bad-bg);border-radius:12px;border-bottom:0}
+.ltask.due+.ltask:not(.due):not(.todo),.ltask.new{border-top:1px solid var(--row-line)}
 /* list/map view toggle + leaflet map */
 .listhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .viewseg{display:flex;padding:3px;border-radius:12px;background:var(--track);gap:2px;flex:0 0 auto}
@@ -573,7 +605,7 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 <div class="aur a1"></div><div class="aur a2"></div><div class="aur a3"></div>
 
 <header class="topbar">
-  <div class="brand"><span class="bpaw"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="12" cy="15.6" rx="4.7" ry="3.9"/><ellipse cx="5.3" cy="10.6" rx="2.4" ry="3.1"/><ellipse cx="9.9" cy="6.8" rx="2.5" ry="3.3"/><ellipse cx="14.7" cy="7" rx="2.5" ry="3.3"/><ellipse cx="19" cy="11" rx="2.3" ry="2.9"/></svg></span>펫시세<small>동물병원 진료비 지도</small></div>
+  <div class="brand"><span class="bpaw"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="12" cy="15.6" rx="4.7" ry="3.9"/><ellipse cx="5.3" cy="10.6" rx="2.4" ry="3.1"/><ellipse cx="9.9" cy="6.8" rx="2.5" ry="3.3"/><ellipse cx="14.7" cy="7" rx="2.5" ry="3.3"/><ellipse cx="19" cy="11" rx="2.3" ry="2.9"/></svg></span>PetLog<small>동물병원 진료비 · 케어</small></div>
   <button class="region-pill" id="pillRegion" onclick="go('set')">서울</button>
 </header>
 
@@ -593,6 +625,19 @@ const GRID = {"11":[2,1],"42":[3,1],"28":[1,2],"41":[2,2],"43":[3,2],"47":[4,2],
 const CENTROID = {"43":[36.7278,127.6115],"42":[37.7122,128.1836],"28":[37.4714,126.6847],"45":[35.7577,127.0229],"48":[35.2436,128.4492],"44":[36.6319,126.9098],"29":[35.1647,126.8723],"47":[36.1853,128.7037],"30":[36.3517,127.3839],"26":[35.1716,129.0728],"27":[35.8697,128.5822],"31":[35.5473,129.288],"11":[37.5462,127.002],"46":[34.9177,126.9207],"50":[33.4283,126.5087],"36":[36.5345,127.2742],"41":[37.4332,127.0304]};
 const CATS = ["진찰료","입원비","예방접종","혈액검사","영상검사","투약·조제"];
 const COUNT = {"43":183,"42":169,"28":259,"45":220,"48":365,"44":298,"29":130,"47":364,"30":120,"26":283,"27":216,"31":81,"11":974,"46":242,"50":115,"36":35,"41":1405};
+// 케어 기록 체크리스트 기본 항목 [id, 이름, 아이콘키, 주기(일), 설명] / once=일회성
+const LOG_TASKS = [
+  {id:"heartworm",name:"심장사상충 예방약",icon:"heart",period:30,note:"매달 1회"},
+  {id:"flea",name:"외부기생충 예방",icon:"shield",period:30,note:"진드기·벼룩, 매달"},
+  {id:"deworm",name:"내부 구충",icon:"shield",period:90,note:"분기마다"},
+  {id:"vax_combo",name:"종합백신 추가접종",icon:"syr",period:365,note:"매년"},
+  {id:"vax_rabies",name:"광견병 예방접종",icon:"syr",period:365,note:"매년"},
+  {id:"checkup",name:"건강검진",icon:"cross",period:365,note:"연 1회(노령 반기)"},
+  {id:"teeth",name:"스케일링·구강 점검",icon:"tooth",period:365,note:"연 1회 권장"},
+  {id:"grooming",name:"발톱·귀 관리",icon:"paw",period:21,note:"3주마다"},
+  {id:"weight",name:"체중 체크",icon:"bowl",period:30,note:"매달 기록"},
+  {id:"register",name:"동물등록",icon:"id",once:true,note:"한 번만 (법적 의무)"}
+];
 // 연간 기본 관리 루틴 (성견/성묘 기준, 추정). 각 항목: [항목명, 연 횟수, 설명]
 const CARE_DOG = [["종합백신(개)",1,"성견 연 1회 추가접종"],["광견병백신",1,"연 1회"],["심장사상충 예방",12,"매달 1회"],["외부기생충 예방",12,"매달 1회"],["초진 진찰료",1,"건강검진 방문"],["전혈구 검사·판독",1,"건강검진 기본 혈액"]];
 const CARE_CAT = [["종합백신(고양이)",1,"성묘 연 1회 추가접종"],["광견병백신",1,"연 1회"],["외부기생충 예방",12,"매달 1회"],["초진 진찰료",1,"건강검진 방문"],["전혈구 검사·판독",1,"건강검진 기본 혈액"]];
@@ -641,7 +686,7 @@ const CARE_GUIDE = [
   ["calc","병원비 아끼는 법","알면 새는 돈을 막아요",[
     "예방(접종·심장사상충·양치)이 치료보다 훨씬 저렴해요. 정기검진으로 조기에 잡으세요.",
     "2023년부터 진료비 게시가 의무예요. 진료 전 게시 비용을 확인하는 건 소비자 권리예요.",
-    "펫시세로 우리 지역 평균과 비교하고, 큰 검사(CT·MRI)나 수술은 미리 견적·설명을 요청하세요.",
+    "PetLog로 우리 지역 평균과 비교하고, 큰 검사(CT·MRI)나 수술은 미리 견적·설명을 요청하세요.",
     "야간·응급 진료는 할증이 붙어요. 급하지 않다면 낮 시간 진료가 유리해요.",
     "펫보험이나 병원 멤버십도 자주 가는 병원이라면 검토해 볼 만해요."]],
   ["id","동물등록 (법적 의무)","2개월령부터 등록 대상",[
@@ -687,6 +732,7 @@ const namesByCat = c => Object.keys(GROUPS).filter(n => GROUPS[n].cat === c);
 
 /* ───────── state ───────── */
 let S = {tab:"home", region:"11", gugun:"", pet:"dog", wt:"5kg", theme:"light", plus:false, fav:[],
+         log:{}, customTasks:[],
          cat:"진찰료", name:"초진 진찰료", calc:["초진 진찰료","종합백신(개)"]};
 try { S = Object.assign(S, JSON.parse(localStorage.getItem("petsise2") || "{}")); } catch(e){}
 if (!GROUPS[S.name]) { S.cat = "진찰료"; S.name = "초진 진찰료"; }
@@ -815,7 +861,11 @@ const IC = {
   tooth:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3c-2 0-3.6 1.6-3.6 4.2 0 2 .6 3 .9 5.3.4 3.6.9 8.5 2.4 8.5 1.3 0 1-3.4 2.6-3.4s1.3 3.4 2.6 3.4c1.5 0 2-4.9 2.4-8.5.3-2.3.9-3.3.9-5.3C18.5 4.6 16.9 3 14.9 3c-1.5 0-2.1 .9-3.5.9S9.5 3 8 3Z"/></svg>',
   bowl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 11h19a9.5 9.5 0 0 1-19 0Z"/><path d="M12 11c0-3 3-3 3-5.5S13 3 12 3"/></svg>',
   siren:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15a6 6 0 0 1 12 0v3H6z"/><path d="M4 21h16"/><path d="M12 3v2.5M4.5 6.5 6 8M19.5 6.5 18 8"/></svg>',
-  id:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M5.8 16c.6-1.3 1.8-2 3.2-2s2.6.7 3.2 2"/><path d="M15 10h4M15 13h3"/></svg>'
+  id:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M5.8 16c.6-1.3 1.8-2 3.2-2s2.6.7 3.2 2"/><path d="M15 10h4M15 13h3"/></svg>',
+  clip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="m8.5 12 2 2 4-4"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>'
 };
 
 /* custom vector mascots (no emoji) */
@@ -853,7 +903,7 @@ const CAT_SVG = '<svg class="pet" viewBox="0 0 96 66" width="88" height="60" ari
  + '</svg>';
 
 /* ───────── router / dock ───────── */
-const TABS = [["home","홈",IC.home],["price","시세",IC.price],["hosp","병원",IC.hosp],["care","케어",IC.book],["calc","계산기",IC.calc],["set","설정",IC.set]];
+const TABS = [["home","홈",IC.home],["price","시세",IC.price],["hosp","병원",IC.hosp],["log","기록",IC.clip],["care","케어",IC.book],["set","설정",IC.set]];
 function go(tab){ S.tab = tab; save(); closeSheet(); render(); window.scrollTo(0,0); }
 function renderDock(){
   document.getElementById("dock").innerHTML = TABS.map(([id, label, ic]) =>
@@ -920,7 +970,7 @@ function vHome(){
     </div>
     ${S.plus ? "" : `<section class="card promo" style="margin-top:14px" role="button" tabindex="0" onclick="openPlus()">
       <span class="ppaw">${IC.paw}</span>
-      <span><span class="pt">펫시세 PLUS</span><div class="pd">동네(시·군·구) 시세와 진료비 계산기가 열려요</div></span>
+      <span><span class="pt">PetLog PLUS</span><div class="pd">동네(시·군·구) 시세와 진료비 계산기가 열려요</div></span>
       <span class="pgo">${IC.chev}</span>
     </section>`}
     <section class="card" style="margin-top:14px">
@@ -1293,7 +1343,7 @@ function openPlus(){
   document.getElementById("sheet").innerHTML = `
     <div class="grip"></div>
     <span class="lock-emoji">🐾</span>
-    <h2 style="text-align:center">펫시세 PLUS</h2>
+    <h2 style="text-align:center">PetLog PLUS</h2>
     <div class="sub" style="text-align:center">데이터로 병원비 걱정을 덜어드려요</div>
     ${plusBenefits()}
     <button class="plus-btn" onclick="activatePlus()">지금 시작하기 · 출시 기념 무료 체험</button>
@@ -1320,6 +1370,90 @@ function openCare(){
   document.getElementById("sheetBg").classList.add("show");
   document.getElementById("sheet").classList.add("show");
 }
+/* ───────── CARE LOG / CHECKLIST ───────── */
+function todayStr(){ const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function daysSince(iso){ if (!iso) return null; return Math.round((new Date(todayStr()+"T00:00:00") - new Date(iso+"T00:00:00")) / 86400000); }
+function fmtDate(iso){ const p = iso.split("-"); return `${+p[1]}월 ${+p[2]}일`; }
+function allTasks(){ return LOG_TASKS.concat(S.customTasks || []); }
+function taskStatus(t){
+  const last = S.log[t.id], ds = daysSince(last);
+  if (t.once) return last ? {k:"done",rank:3,txt:"완료",sub:fmtDate(last)+" 완료"} : {k:"todo",rank:0,txt:"미완료",sub:"한 번만 하면 돼요"};
+  if (ds === null) return {k:"new",rank:1,txt:"기록 시작",sub:"아직 기록이 없어요"};
+  const left = t.period - ds;
+  if (ds === 0) return {k:"today",rank:4,txt:"오늘 완료",sub:"잘하셨어요"};
+  if (left <= 0) return {k:"due",rank:0,txt:"지금 할 때",sub:(-left)+"일 지남"};
+  if (left <= Math.max(3, Math.round(t.period*0.15))) return {k:"soon",rank:2,txt:"곧 예정",sub:"D-"+left};
+  return {k:"ok",rank:3,txt:ds+"일 전 완료",sub:"D-"+left};
+}
+function logToggle(id){
+  const t = todayStr();
+  if (S.log[id] === t) delete S.log[id]; else S.log[id] = t;
+  save(); renderLogParts();
+}
+function removeTask(id){ S.customTasks = (S.customTasks||[]).filter(x => x.id !== id); delete S.log[id]; save(); renderLogParts(); }
+function openAddTask(){
+  document.getElementById("sheet").innerHTML = `
+    <div class="grip"></div>
+    <h2>기록 항목 추가</h2>
+    <div class="sub">우리 아이만의 케어 항목을 만들어요</div>
+    <input class="search" id="atName" type="text" placeholder="예: 슬개골 재활, 안약 넣기" maxlength="20" style="margin:16px 0 6px">
+    <div class="sec-s" style="padding-left:0;margin:10px 0 8px">얼마나 자주 하나요?</div>
+    <div class="chiprow" id="atPeriod" style="margin:0"></div>
+    <button class="plus-btn" onclick="addTask()">추가하기</button>`;
+  let sel = "30";
+  const draw = () => document.getElementById("atPeriod").innerHTML =
+    [["7","매주"],["30","매달"],["90","분기"],["365","매년"],["once","한 번만"]].map(([v,l]) =>
+      `<button class="chip${v===sel?" on":""}" onclick="this.closest('#atPeriod').__sel='${v}';[...this.parentNode.children].forEach(c=>c.classList.remove('on'));this.classList.add('on')">${l}</button>`).join("");
+  draw();
+  document.getElementById("atPeriod").__sel = sel;
+  document.getElementById("sheetBg").classList.add("show");
+  document.getElementById("sheet").classList.add("show");
+  setTimeout(() => document.getElementById("atName").focus(), 250);
+}
+function addTask(){
+  const name = (document.getElementById("atName").value || "").trim();
+  if (!name) { document.getElementById("atName").focus(); return; }
+  const v = document.getElementById("atPeriod").__sel || "30";
+  const task = {id:"c"+Date.now(), name, custom:true};
+  if (v === "once") task.once = true; else { task.period = +v; task.note = "직접 추가"; }
+  (S.customTasks = S.customTasks || []).push(task);
+  save(); closeSheet(); render();
+}
+function vLog(){
+  const tasks = allTasks().map(t => ({t, s: taskStatus(t)})).sort((a,b) => a.s.rank - b.s.rank || (a.t.period||9999) - (b.t.period||9999));
+  const due = tasks.filter(x => x.s.rank === 0).length;
+  const doneToday = tasks.filter(x => x.s.k === "today").length;
+  const rows = tasks.map(({t, s}) => {
+    const checked = S.log[t.id] === todayStr() || (t.once && S.log[t.id]);
+    return `<div class="ltask ${s.k}">
+      <button class="lcheck${checked?" on":""}" aria-label="완료 기록" onclick="logToggle('${t.id}')">${IC.check}</button>
+      <span class="lbd"><span class="ln">${t.name}${t.custom?"":`<em class="lnote">${t.note}</em>`}</span>
+        <span class="lsub"><b class="st st-${s.k}">${s.txt}</b> · ${s.sub}</span></span>
+      ${t.custom ? `<button class="ldel" aria-label="삭제" onclick="removeTask('${t.id}')">${IC.trash}</button>`
+                 : `<span class="lic">${IC[t.icon]||IC.paw}</span>`}
+    </div>`;
+  }).join("");
+  return `<div class="screen">
+    <section class="hero" style="padding-bottom:2px">
+      <span class="eyebrow">우리 아이 케어 기록</span>
+      <h1>${due > 0 ? `지금 챙길 게<br>${due}개 있어요` : "케어, 잘 챙기고<br>있어요"}</h1>
+      <p>${S.pet==="cat"?"고양이":"강아지"} 예방·검진을 눌러서 기록하면 다음 시기를 알려드려요.</p>
+    </section>
+    <section class="card">
+      <div class="logsum">
+        <div class="ls-item"><span class="ls-v" style="color:var(--bad)">${due}</span><span class="ls-l">지금 할 것</span></div>
+        <div class="ls-item"><span class="ls-v" style="color:var(--good)">${doneToday}</span><span class="ls-l">오늘 완료</span></div>
+        <div class="ls-item"><span class="ls-v">${allTasks().length}</span><span class="ls-l">전체 항목</span></div>
+      </div>
+    </section>
+    <section class="card"><div id="logList">${rows}</div>
+      <button class="addtask" onclick="openAddTask()">${IC.plus} 항목 직접 추가</button>
+    </section>
+    <p class="foot" style="text-align:center">기록은 이 기기에만 저장돼요. 접종·구충 시기는 참고용이며, 정확한 일정은 수의사와 상담하세요.</p>
+  </div>`;
+}
+function renderLogParts(){ if (S.tab === "log") document.getElementById("view").innerHTML = vLog(); }
+
 /* ───────── CARE GUIDE ───────── */
 function procInfo(name){ const base = name.replace(/\(.+\)/, ""); return PROC_INFO[base] || PROC_INFO[name] || null; }
 function vCare(){
@@ -1427,7 +1561,7 @@ function vSet(){
         <div class="seg">${["5kg","10kg","20kg"].map(w => `<button class="${S.wt===w?"on":""}" onclick="setWt('${w}')">${w}</button>`).join("")}</div></div>
     </section>
     <section class="card">
-      <div class="sec-t">펫시세 PLUS ${S.plus ? '<span class="plus-tag">이용 중</span>' : ""}</div>
+      <div class="sec-t">PetLog PLUS ${S.plus ? '<span class="plus-tag">이용 중</span>' : ""}</div>
       ${S.plus
         ? `<div class="sec-s">동네 시세와 계산기를 쓸 수 있어요. 함께해 주셔서 고마워요 🧡</div>
            <button class="more-btn" onclick="stopPlus()">PLUS 해제 (체험 데모)</button>`
@@ -1452,7 +1586,7 @@ function vSet(){
       <div class="set-row"><a class="sl" href="mailto:minjoon@logify.co.kr?subject=%ED%8E%AB%EC%8B%9C%EC%84%B8%20%EB%AC%B8%EC%9D%98">문의 보내기<small>잘못된 정보나 제안을 알려주세요</small></a><span class="sv">✉️</span></div>
       <div class="set-row"><span class="sl">면책<small>표시 가격은 조사 통계이며 실제 청구액은 병원·진료 내용에 따라 달라요. 진료 판단의 근거로 사용할 수 없어요.</small></span></div>
     </section>
-    <div class="ver">펫시세 v${VERSION} · 데이터로 병원비 걱정을 덜어드려요</div>
+    <div class="ver">PetLog v${VERSION} · 데이터로 병원비 걱정을 덜어드려요</div>
   </div>`;
 }
 function setRegion(cd){ S.region = cd; S.gugun = ""; save(); loadGugun().then(() => render()); render(); }
@@ -1485,6 +1619,7 @@ function render(){
   else if (S.tab === "price") { v.innerHTML = vPrice(); renderPriceParts(); }
   else if (S.tab === "hosp") { v.innerHTML = vHosp(); renderHospParts(); }
   else if (S.tab === "care") v.innerHTML = vCare();
+  else if (S.tab === "log") v.innerHTML = vLog();
   else if (S.tab === "calc") v.innerHTML = vCalc();
   else v.innerHTML = vSet();
   document.getElementById("pillRegion").textContent = SHORT[S.region] + (S.gugun ? " · " + S.gugun : "");
