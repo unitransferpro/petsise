@@ -198,6 +198,25 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 .promo .pgo svg{width:18px;height:18px}
 .bpaw svg{width:16px;height:16px;color:var(--accent);vertical-align:-3px;margin-right:5px}
 .hrow .ic svg{width:18px;height:18px}
+/* hospital extras: actions, star, distance, 24h */
+#hActions .chip svg{width:14px;height:14px;vertical-align:-2px;margin-right:4px}
+.hact{display:flex;align-items:center;gap:2px;flex:0 0 auto}
+.starb{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:var(--ink3);transition:transform .15s cubic-bezier(.3,2,.4,1),color .15s}
+.starb svg{width:18px;height:18px}
+.starb.on{color:#f0a500}
+.starb:active{transform:scale(.82)}
+.starb.big{width:40px;height:40px}.starb.big svg{width:22px;height:22px}
+.tag24{font-style:normal;font-size:10px;font-weight:800;color:var(--bad);background:var(--bad-bg);border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:1px}
+.km{font-style:normal;font-weight:800;color:var(--accent);font-size:12px;margin-left:6px}
+.sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.sheet-head h2{flex:1;min-width:0}
+.rank-card{display:flex;align-items:center;gap:12px;margin-top:14px;padding:13px 15px;border-radius:16px;background:var(--track)}
+.rank-badge{flex:0 0 auto;min-width:46px;height:46px;padding:0 10px;border-radius:14px;background:var(--accent);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.rank-badge b{font-family:var(--cute);font-size:20px;font-weight:400}
+.rank-badge span{font-size:9px;font-weight:700;opacity:.9;margin-top:1px}
+.rank-badge.cheap{background:var(--good)}.rank-badge.pricey{background:var(--bad)}
+.rank-txt{font-size:12.5px;line-height:1.55;color:var(--ink2)}
+.rank-txt b{color:var(--ink);font-weight:700}
 
 /* PLUS */
 .plus-tag{display:inline-flex;align-items:center;background:var(--warn-bg);color:var(--warn-tx);border-radius:999px;font-size:10px;font-weight:800;padding:3px 8px;letter-spacing:.05em;font-family:"Pretendard Variable",sans-serif;vertical-align:2px}
@@ -441,6 +460,7 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 const D = window.VETFEE;
 const SHORT = {"11":"서울","26":"부산","27":"대구","28":"인천","29":"광주","30":"대전","31":"울산","36":"세종","41":"경기","42":"강원","43":"충북","44":"충남","45":"전북","46":"전남","47":"경북","48":"경남","50":"제주"};
 const GRID = {"11":[2,1],"42":[3,1],"28":[1,2],"41":[2,2],"43":[3,2],"47":[4,2],"44":[1,3],"36":[2,3],"30":[3,3],"27":[4,3],"45":[1,4],"48":[3,4],"31":[4,4],"29":[1,5],"26":[4,5],"46":[1,6],"50":[1,7]};
+const CENTROID = {"43":[36.7278,127.6115],"42":[37.7122,128.1836],"28":[37.4714,126.6847],"45":[35.7577,127.0229],"48":[35.2436,128.4492],"44":[36.6319,126.9098],"29":[35.1647,126.8723],"47":[36.1853,128.7037],"30":[36.3517,127.3839],"26":[35.1716,129.0728],"27":[35.8697,128.5822],"31":[35.5473,129.288],"11":[37.5462,127.002],"46":[34.9177,126.9207],"50":[33.4283,126.5087],"36":[36.5345,127.2742],"41":[37.4332,127.0304]};
 const CATS = ["진찰료","입원비","예방접종","혈액검사","영상검사","투약·조제"];
 const VERSION = "2.0.0";
 const SRC_DATE = "2026-07-22";
@@ -451,7 +471,7 @@ D.items.forEach((it, idx) => { it.idx = idx; (GROUPS[it.name] = GROUPS[it.name] 
 const namesByCat = c => Object.keys(GROUPS).filter(n => GROUPS[n].cat === c);
 
 /* ───────── state ───────── */
-let S = {tab:"home", region:"11", gugun:"", pet:"dog", wt:"5kg", theme:"light", plus:false,
+let S = {tab:"home", region:"11", gugun:"", pet:"dog", wt:"5kg", theme:"light", plus:false, fav:[],
          cat:"진찰료", name:"초진 진찰료", calc:["초진 진찰료","종합백신(개)"]};
 try { S = Object.assign(S, JSON.parse(localStorage.getItem("petsise2") || "{}")); } catch(e){}
 if (!GROUPS[S.name]) { S.cat = "진찰료"; S.name = "초진 진찰료"; }
@@ -463,6 +483,7 @@ const save = () => localStorage.setItem("petsise2", JSON.stringify(S));
 let GUGUN = null, GUGUN_P = null;         // gugun price stats
 const HOSP = {};                          // per-sido hospital lists
 let hospShown = 40, hospQuery = "", hospGugunF = "";
+let myPos = null, geoSort = false, geoBusy = false, hosp24 = false, favView = false;
 
 function loadGugun(){
   if (GUGUN || GUGUN_P) return GUGUN_P || Promise.resolve();
@@ -509,6 +530,30 @@ function gugunStat(cd, gg, it){
   const arr = GUGUN[cd] && GUGUN[cd][gg];
   return (arr && arr[it.idx] && arr[it.idx][1] > 0) ? arr[it.idx] : null;
 }
+// geo — hospital record is [name,gugun,road,phone,year,lat,lng]
+const RAD = Math.PI / 180;
+function haversine(la1, lo1, la2, lo2){
+  const dLa = (la2 - la1) * RAD, dLo = (lo2 - lo1) * RAD;
+  const a = Math.sin(dLa/2)**2 + Math.cos(la1*RAD) * Math.cos(la2*RAD) * Math.sin(dLo/2)**2;
+  return 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+}
+function nearestRegion(la, lo){
+  let best = "11", bd = Infinity;
+  for (const cd in CENTROID){ const d = haversine(la, lo, CENTROID[cd][0], CENTROID[cd][1]); if (d < bd){ bd = d; best = cd; } }
+  return best;
+}
+function distKm(h){ return (myPos && h[5]) ? haversine(myPos.lat, myPos.lng, h[5], h[6]) : Infinity; }
+function fmtKm(km){ return km < 1 ? Math.round(km*1000) + "m" : km.toFixed(1) + "km"; }
+function is24(h){ return /24시|24시간|야간|응급|동물의료센터|메디컬센터/.test(h[0]); }
+// favorites — key by region+name+road
+function favKey(cd, h){ return cd + "|" + h[0] + "|" + h[2]; }
+function isFav(cd, h){ return S.fav.includes(favKey(cd, h)); }
+function toggleFav(cd, i){
+  const h = (HOSP[cd] || [])[i]; if (!h) return;
+  const k = favKey(cd, h), j = S.fav.indexOf(k);
+  if (j >= 0) S.fav.splice(j, 1); else S.fav.push(k);
+  save(); renderHospParts();
+}
 
 /* ───────── theme ───────── */
 function applyTheme(){
@@ -533,7 +578,11 @@ const IC = {
   cross:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
   heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.6-9.2-9A5.2 5.2 0 0 1 12 6.6 5.2 5.2 0 0 1 21.2 11c-2.2 4.4-9.2 9-9.2 9Z"/></svg>',
   drop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6.5 7.2 6.5 11.5a6.5 6.5 0 1 1-13 0C5.5 10.2 12 3 12 3Z"/></svg>',
-  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>'
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>',
+  loc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>',
+  star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
+  starf:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>'
 };
 
 /* custom vector mascots (no emoji) */
@@ -699,6 +748,19 @@ function renderDetail(){
   const span = Math.max(1, a[3] - a[0]);
   const pos = v => Math.max(2, Math.min(98, (v - a[0]) / span * 100)).toFixed(1);
   const natIn = nat.v >= a[0] && nat.v <= a[3];
+  // national ranking (1 = cheapest); exclude regions with no survey data (avg 0)
+  const ranked = Object.keys(it.r).map(cd => [cd, it.r[cd][1]]).filter(x => x[1] > 0).sort((x,y) => x[1] - y[1]);
+  const N = ranked.length;
+  const rank = ranked.findIndex(x => x[0] === S.region) + 1;
+  const cheapest = ranked[0], priciest = ranked[N-1];
+  const rcls = !rank ? "" : rank <= 5 ? "cheap" : rank >= N-4 ? "pricey" : "";
+  const rankLine = !rank
+    ? `이 항목은 ${D.sido[S.region]}에서 조사된 가격이 없어요. 전국 최저는 ${SHORT[cheapest[0]]}(${compact(cheapest[1])}원)이에요.`
+    : rank === 1
+    ? `<b>전국에서 가장 저렴한 지역</b>이에요. 가장 비싼 ${SHORT[priciest[0]]}(${compact(priciest[1])}원)보다 ${Math.round((1 - a[1]/priciest[1])*100)}% 쌉니다.`
+    : rank === N
+    ? `<b>전국에서 가장 비싼 지역</b>이에요. 가장 싼 ${SHORT[cheapest[0]]}은 ${compact(cheapest[1])}원이에요.`
+    : `전국 ${N}곳 중 <b>${rank}번째로 저렴</b>해요. 최저 ${SHORT[cheapest[0]]}(${compact(cheapest[1])}원), 최고 ${SHORT[priciest[0]]}(${compact(priciest[1])}원).`;
   document.getElementById("detail").innerHTML = `
     <div class="d-head"><span class="d-region">${D.sido[S.region]}</span><span class="delta ${cls}">${dTxt}</span></div>
     <div class="d-item">${S.name}${it.wt ? " · " + it.wt : ""} · 평균</div>
@@ -710,6 +772,10 @@ function renderDetail(){
       </div>
       <div class="ends"><span>최저 ${won(a[0])}원</span><span>최고 ${won(a[3])}원</span></div>
       <div class="lens-cap">이 지역 병원들의 가격 폭이에요. 중간값은 <b>${won(a[2])}원</b> — 절반의 병원이 이보다 쌉니다.</div>
+    </div>
+    <div class="rank-card">
+      <span class="rank-badge ${rcls}"><b>${rank || "–"}</b><span>${rank ? "/ " + N + "위" : "자료 없음"}</span></span>
+      <span class="rank-txt">${rankLine}</span>
     </div>`;
 }
 function renderList(){
@@ -744,6 +810,7 @@ function vHosp(){
       <div class="sec-t">동물병원 찾기</div>
       <div class="sec-s">행정안전부 인허가 대장 기준 영업 중인 병원 (${HOSP_DATE} 기준)</div>
       <div class="chiprow catrow" id="hSido"></div>
+      <div class="chiprow" id="hActions" style="margin-bottom:10px"></div>
       <input class="search" id="hSearch" type="search" placeholder="병원 이름 검색" value="${esc(hospQuery)}" oninput="hospSearch(this.value)">
       <div class="chiprow" id="hGugun"></div>
     </section>
@@ -755,44 +822,95 @@ function renderHospParts(){
   const el = s => document.getElementById(s);
   if (!el("hSido")) return;
   el("hSido").innerHTML = Object.keys(SHORT).map(cd =>
-    `<button class="chip${cd===S.region?" on":""}" onclick="hospRegion('${cd}')">${SHORT[cd]}</button>`).join("");
-  loadHosp(S.region).then(list => {
-    if (S.tab !== "hosp") return;
-    const guguns = [...new Set(list.map(h => h[1]))].sort((a,b) => a.localeCompare(b,"ko"));
-    el("hGugun").innerHTML = `<button class="chip${!hospGugunF?" on":""}" onclick="hospGugun('')">전체</button>` +
-      guguns.map(g => `<button class="chip${g===hospGugunF?" on":""}" onclick="hospGugun('${esc(g)}')">${g}</button>`).join("");
-    let rows = list;
-    if (hospGugunF) rows = rows.filter(h => h[1] === hospGugunF);
-    const q = hospQuery.trim();
-    if (q) rows = rows.filter(h => h[0].includes(q));
-    const shown = rows.slice(0, hospShown);
+    `<button class="chip${cd===S.region && !favView ? " on" : ""}" onclick="hospRegion('${cd}')">${SHORT[cd]}</button>`).join("");
+  el("hActions").innerHTML =
+    `<button class="chip${geoSort?" on":""}" onclick="geoNear()">${geoBusy ? "위치 확인 중…" : IC.loc + " 내 주변순"}</button>` +
+    `<button class="chip${hosp24?" on":""}" onclick="toggle24()">${IC.clock} 24시·응급</button>` +
+    `<button class="chip${favView?" on":""}" onclick="toggleFavView()">${IC.star} 즐겨찾기${S.fav.length ? " " + S.fav.length : ""}</button>`;
+  const q = hospQuery.trim();
+
+  function paint(entries, label, cross){
+    if (geoSort && myPos) entries = entries.slice().sort((a,b) => distKm(a[1]) - distKm(b[1]));
+    const shown = entries.slice(0, hospShown);
     el("hList").className = "";
-    el("hList").innerHTML = `<div class="count-cap">${D.sido[S.region]}${hospGugunF ? " " + hospGugunF : ""} · ${won(rows.length)}곳</div>` +
-      (shown.length ? shown.map((h, i) =>
-        `<button class="hrow" onclick="openHosp(${list.indexOf(h)})">
+    el("hList").innerHTML =
+      `<div class="count-cap">${label} · ${won(entries.length)}곳${geoSort && myPos ? " · 가까운 순" : ""}</div>` +
+      (shown.length ? shown.map(([cd, h]) => {
+        const idx = HOSP[cd].indexOf(h), km = distKm(h), fav = isFav(cd, h);
+        return `<button class="hrow" onclick="openHosp(${idx},'${cd}')">
           <span class="ic">${IC.paw}</span>
-          <span class="bd"><span class="nm">${esc(h[0])}</span><span class="ad">${esc(h[2])}</span></span>
-          <span class="mapb" role="link" aria-label="네이버 지도에서 보기" onclick="event.stopPropagation();openNaver(${list.indexOf(h)})">${IC.pin}</span>
-        </button>`).join("") : `<div class="empty">조건에 맞는 병원이 없어요.<br>검색어나 지역을 바꿔보세요.</div>`) +
-      (rows.length > hospShown ? `<button class="more-btn" onclick="hospMore()">더 보기 (${won(rows.length - hospShown)}곳 남음)</button>` : "");
-  });
+          <span class="bd">
+            <span class="nm">${esc(h[0])}${is24(h) ? '<em class="tag24">24시</em>' : ""}${km < Infinity ? '<em class="km">' + fmtKm(km) + '</em>' : ""}</span>
+            <span class="ad">${cross ? SHORT[cd] + " · " : ""}${esc(h[2])}</span></span>
+          <span class="hact">
+            <span class="starb${fav ? " on" : ""}" role="button" aria-label="즐겨찾기" onclick="event.stopPropagation();toggleFav('${cd}',${idx})">${fav ? IC.starf : IC.star}</span>
+            <span class="mapb" role="link" aria-label="네이버 지도" onclick="event.stopPropagation();openNaver(${idx},'${cd}')">${IC.pin}</span>
+          </span>
+        </button>`;
+      }).join("") : `<div class="empty">${favView ? "아직 즐겨찾기한 병원이 없어요.<br>병원 옆 별을 눌러 저장해 보세요." : "조건에 맞는 병원이 없어요.<br>검색어나 필터를 바꿔보세요."}</div>`) +
+      (entries.length > hospShown ? `<button class="more-btn" onclick="hospMore()">더 보기 (${won(entries.length - hospShown)}곳 남음)</button>` : "");
+  }
+
+  if (favView) {
+    el("hGugun").innerHTML = "";
+    const cds = [...new Set(S.fav.map(k => k.split("|")[0]))];
+    Promise.all(cds.map(loadHosp)).then(() => {
+      if (S.tab !== "hosp") return;
+      let entries = [];
+      S.fav.forEach(k => { const [cd, nm, rd] = k.split("|"); const h = (HOSP[cd] || []).find(x => x[0] === nm && x[2] === rd); if (h) entries.push([cd, h]); });
+      if (q) entries = entries.filter(e => e[1][0].includes(q));
+      if (hosp24) entries = entries.filter(e => is24(e[1]));
+      paint(entries, "즐겨찾기", true);
+    });
+  } else {
+    loadHosp(S.region).then(list => {
+      if (S.tab !== "hosp") return;
+      const guguns = [...new Set(list.map(h => h[1]))].sort((a,b) => a.localeCompare(b,"ko"));
+      el("hGugun").innerHTML = geoSort ? "" :
+        `<button class="chip${!hospGugunF?" on":""}" onclick="hospGugun('')">전체</button>` +
+        guguns.map(g => `<button class="chip${g===hospGugunF?" on":""}" onclick="hospGugun('${esc(g)}')">${g}</button>`).join("");
+      let entries = list.map(h => [S.region, h]);
+      if (hospGugunF && !geoSort) entries = entries.filter(e => e[1][1] === hospGugunF);
+      if (q) entries = entries.filter(e => e[1][0].includes(q));
+      if (hosp24) entries = entries.filter(e => is24(e[1]));
+      paint(entries, D.sido[S.region] + (hospGugunF && !geoSort ? " " + hospGugunF : ""), false);
+    });
+  }
 }
-function hospRegion(cd){ S.region = cd; S.gugun = ""; hospGugunF = ""; hospShown = 40; save(); render(); }
+function hospRegion(cd){ S.region = cd; S.gugun = ""; hospGugunF = ""; favView = false; hospShown = 40; save(); render(); }
 function hospGugun(g){ hospGugunF = g; hospShown = 40; renderHospParts(); }
 function hospSearch(q){ hospQuery = q; hospShown = 40; clearTimeout(hospSearch._t); hospSearch._t = setTimeout(renderHospParts, 200); }
 function hospMore(){ hospShown += 60; renderHospParts(); }
+function toggle24(){ hosp24 = !hosp24; hospShown = 40; renderHospParts(); }
+function toggleFavView(){ favView = !favView; hospShown = 40; renderHospParts(); }
+function geoNear(){
+  if (geoSort) { geoSort = false; renderHospParts(); return; }
+  if (!navigator.geolocation) { alert("이 기기에서는 위치를 사용할 수 없어요."); return; }
+  geoBusy = true; renderHospParts();
+  navigator.geolocation.getCurrentPosition(pos => {
+    myPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    geoBusy = false; geoSort = true; favView = false;
+    const near = nearestRegion(myPos.lat, myPos.lng);
+    if (near !== S.region) { S.region = near; S.gugun = ""; hospGugunF = ""; save(); }
+    hospShown = 40; renderHospParts();
+  }, () => {
+    geoBusy = false; renderHospParts();
+    alert("위치를 가져오지 못했어요. 브라우저 위치 권한을 확인해 주세요.");
+  }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+}
 
-function openHosp(i){
-  const h = (HOSP[S.region] || [])[i]; if (!h) return;
-  const gg = h[1];
+function openHosp(i, cd){
+  cd = cd || S.region;
+  const h = (HOSP[cd] || [])[i]; if (!h) return;
+  const gg = h[1], fav = isFav(cd, h);
   const render_ = () => {
-    const hasGu = S.plus && GUGUN && GUGUN[S.region] && !!GUGUN[S.region][gg];
-    const priceArea = hasGu ? gg : D.sido[S.region];
+    const hasGu = S.plus && GUGUN && GUGUN[cd] && !!GUGUN[cd][gg];
+    const priceArea = hasGu ? gg : D.sido[cd];
     const rows = CATS.map(cat => {
       const items = namesByCat(cat).map(n => {
         const v = variantOf(GROUPS[n]);
-        const g = hasGu ? gugunStat(S.region, gg, v) : null;
-        const sido = v.r[S.region];
+        const g = hasGu ? gugunStat(cd, gg, v) : null;
+        const sido = v.r[cd];
         const a = g || sido, isGu = !!g;
         return `<div class="row" style="cursor:default">
           <span class="rn">${n}${v.wt ? `<small>${v.wt}</small>` : ""}</span>
@@ -801,18 +919,20 @@ function openHosp(i){
       }).join("");
       return `<div class="grp"><h3>${cat}</h3>${items}</div>`;
     }).join("");
+    const km = distKm(h);
     document.getElementById("sheet").innerHTML = `
       <div class="grip"></div>
-      <h2>${esc(h[0])}</h2>
-      <div class="sub">${D.sido[S.region]} ${esc(h[2])}${h[4] ? " · " + h[4] + "년 개원" : ""}</div>
+      <div class="sheet-head"><h2>${esc(h[0])}${is24(h) ? '<em class="tag24">24시</em>' : ""}</h2>
+        <button class="starb big${fav ? " on" : ""}" aria-label="즐겨찾기" onclick="favSheet('${cd}',${i},this)">${fav ? IC.starf : IC.star}</button></div>
+      <div class="sub">${D.sido[cd]} ${esc(h[2])}${h[4] ? " · " + h[4] + "년 개원" : ""}${km < Infinity ? " · 여기서 " + fmtKm(km) : ""}</div>
       <div class="actions">
         ${h[3] ? `<a class="act-call" href="tel:${h[3]}">${IC.call}전화</a>` : ""}
-        <a class="act-map" href="${naverUrl(h)}" target="_blank" rel="noopener">${IC.pin}네이버 지도</a>
-        <button class="act-copy" onclick="copyAddr('${esc(D.sido[S.region] + " " + h[2])}')">복사</button>
+        <a class="act-map" href="${naverUrl(h, cd)}" target="_blank" rel="noopener">${IC.pin}네이버 지도</a>
+        <button class="act-copy" onclick="copyAddr('${esc(D.sido[cd] + " " + h[2])}')">복사</button>
       </div>
       <div class="sec-t" style="margin-top:6px">${priceArea} 시세 참고</div>
       <div class="sec-s">공시 조사 통계예요. 이 병원의 실제 가격은 병원에 게시된 비용을 확인하세요.</div>
-      ${!S.plus && GUGUN && GUGUN[S.region] && GUGUN[S.region][gg] ? `<button class="plus-banner" onclick="closeSheet();openPlus()">${IC.paw} ${gg} 동네 시세는 PLUS에서 볼 수 있어요 — 지금은 시도 평균이에요</button>` : ""}
+      ${!S.plus && GUGUN && GUGUN[cd] && GUGUN[cd][gg] ? `<button class="plus-banner" onclick="closeSheet();openPlus()">${IC.paw} ${gg} 동네 시세는 PLUS에서 볼 수 있어요 — 지금은 시도 평균이에요</button>` : ""}
       ${rows}
       <p class="note">병원별 개별 가격은 법적으로 각 병원 안에 게시돼요. 여기 표시된 값은 ${priceArea} 지역의 조사 평균입니다.</p>`;
     document.getElementById("sheetBg").classList.add("show");
@@ -820,9 +940,15 @@ function openHosp(i){
   };
   GUGUN ? render_() : loadGugun().then(render_);
 }
+function favSheet(cd, i, btn){
+  toggleFav(cd, i);
+  const on = isFav(cd, (HOSP[cd] || [])[i]);
+  btn.classList.toggle("on", on);
+  btn.innerHTML = on ? IC.starf : IC.star;
+}
 function copyAddr(t){ navigator.clipboard && navigator.clipboard.writeText(t); }
-function naverUrl(h){ return "https://map.naver.com/p/search/" + encodeURIComponent(`${D.sido[S.region]} ${h[1]} ${h[0]}`); }
-function openNaver(i){ const h = (HOSP[S.region] || [])[i]; if (h) window.open(naverUrl(h), "_blank", "noopener"); }
+function naverUrl(h, cd){ return "https://map.naver.com/p/search/" + encodeURIComponent(`${D.sido[cd || S.region]} ${h[1]} ${h[0]}`); }
+function openNaver(i, cd){ cd = cd || S.region; const h = (HOSP[cd] || [])[i]; if (h) window.open(naverUrl(h, cd), "_blank", "noopener"); }
 function closeSheet(){
   document.getElementById("sheetBg").classList.remove("show");
   document.getElementById("sheet").classList.remove("show");
@@ -833,7 +959,7 @@ function plusBenefits(){
   return `<div style="margin:8px 0 4px">
     <div class="plus-benefit">🏘️ <span><b>동네 시세</b> — 시·군·구 단위 정밀 가격 (201개 지역 조사 데이터)</span></div>
     <div class="plus-benefit">🧮 <span><b>진료비 계산기</b> — 오늘 받을 진료 예상 비용 미리 계산</span></div>
-    <div class="plus-benefit">💌 <span><b>새 기능 우선 이용</b> — 병원 즐겨찾기, 시세 변동 알림 (준비 중)</span></div>
+    <div class="plus-benefit">💌 <span><b>새 기능 우선 이용</b> — 시세 변동 알림 (준비 중)</span></div>
   </div>`;
 }
 function openPlus(){
