@@ -349,10 +349,14 @@ h1{font-size:29px;line-height:1.3;font-weight:400;font-family:var(--cute);letter
 .lcheck:active{transform:scale(.85)}
 .lcheck.on{background:var(--good);border-color:var(--good);color:#fff}
 .ltask.due .lcheck,.ltask.todo .lcheck{border-color:var(--bad)}
-.lbd{flex:1;min-width:0}
+.lbd{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer}
+.lbd:active{opacity:.6}
 .ln{display:block;font-size:14px;font-weight:700;letter-spacing:-.01em}
 .lnote{font-style:normal;font-weight:500;color:var(--ink3);font-size:11.5px;margin-left:5px}
 .lsub{display:block;font-size:12px;color:var(--ink3);margin-top:3px}
+.lmemo{display:inline-block;font-size:11.5px;color:var(--ink2);margin-top:5px;background:var(--track);padding:3px 9px;border-radius:8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+.le-quick{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.le-quick .chip{padding:8px 13px;font-size:12.5px}
 .st{font-weight:800}
 .st-due,.st-todo{color:var(--bad)}
 .st-soon{color:var(--warn-tx)}
@@ -789,7 +793,7 @@ const namesByCat = c => Object.keys(GROUPS).filter(n => GROUPS[n].cat === c);
 /* ───────── state ───────── */
 let S = {tab:"home", region:"11", gugun:"", pet:"dog", wt:"5kg", theme:"light", plus:false, fav:[],
          onboarded:false, petName:"", petBirth:"", petSex:"", neutered:null,
-         log:{}, customTasks:[],
+         log:{}, logMemo:{}, customTasks:[],
          cat:"진찰료", name:"초진 진찰료", calc:["초진 진찰료","종합백신(개)"]};
 try { S = Object.assign(S, JSON.parse(localStorage.getItem("petsise2") || "{}")); } catch(e){}
 if (!GROUPS[S.name]) { S.cat = "진찰료"; S.name = "초진 진찰료"; }
@@ -1462,6 +1466,43 @@ function logToggle(id){
   if (S.log[id] === t) delete S.log[id]; else S.log[id] = t;
   save(); renderLogParts();
 }
+function openLogEdit(id){
+  const t = allTasks().find(x => x.id === id); if (!t) return;
+  const cur = S.log[id] || "", memo = (S.logMemo || {})[id] || "";
+  document.getElementById("sheet").innerHTML = `
+    <div class="grip"></div>
+    <h2>${esc(t.name)}</h2>
+    <div class="sub">${t.once ? "완료한 날짜를 직접 기록해요" : "마지막으로 한 날짜를 직접 기록해요"}</div>
+    <label class="ob-l">날짜</label>
+    <input class="search" id="leDate" type="date" value="${cur || todayStr()}" max="${todayStr()}">
+    <div class="le-quick">
+      <button class="chip" onclick="document.getElementById('leDate').value='${todayStr()}'">오늘</button>
+      <button class="chip" onclick="leShift(-1)">어제</button>
+      <button class="chip" onclick="leShift(-7)">1주 전</button>
+      <button class="chip" onclick="leShift(-30)">1달 전</button>
+    </div>
+    <label class="ob-l">메모 <em>(선택)</em></label>
+    <input class="search" id="leMemo" type="text" maxlength="40" placeholder="예: OO동물병원 · 3.2만원" value="${esc(memo)}">
+    <button class="plus-btn" onclick="saveLogEdit('${id}')">저장하기</button>
+    ${cur ? `<button class="ob-skip" onclick="clearLog('${id}')">기록 지우기</button>` : ""}`;
+  document.getElementById("sheetBg").classList.add("show");
+  document.getElementById("sheet").classList.add("show");
+}
+function leShift(days){
+  const el = document.getElementById("leDate");
+  const base = new Date((el.value || todayStr()) + "T00:00:00");
+  base.setDate(base.getDate() + days);
+  el.value = base.getFullYear() + "-" + String(base.getMonth()+1).padStart(2,"0") + "-" + String(base.getDate()).padStart(2,"0");
+}
+function saveLogEdit(id){
+  const d = document.getElementById("leDate").value; if (!d) return;
+  S.log[id] = d;
+  const m = (document.getElementById("leMemo").value || "").trim();
+  S.logMemo = S.logMemo || {};
+  if (m) S.logMemo[id] = m; else delete S.logMemo[id];
+  save(); closeSheet(); renderLogParts();
+}
+function clearLog(id){ delete S.log[id]; if (S.logMemo) delete S.logMemo[id]; save(); closeSheet(); renderLogParts(); }
 function removeTask(id){ S.customTasks = (S.customTasks||[]).filter(x => x.id !== id); delete S.log[id]; save(); renderLogParts(); }
 function openAddTask(){
   document.getElementById("sheet").innerHTML = `
@@ -1497,11 +1538,14 @@ function vLog(){
   const doneToday = tasks.filter(x => x.s.k === "today").length;
   const sc = careScore();
   const rows = tasks.map(({t, s}) => {
-    const checked = S.log[t.id] === todayStr() || (t.once && S.log[t.id]);
+    const checked = t.once ? !!S.log[t.id] : !(s.k === "due" || s.k === "new");
+    const memo = (S.logMemo || {})[t.id];
     return `<div class="ltask ${s.k}">
-      <button class="lcheck${checked?" on":""}" aria-label="완료 기록" onclick="logToggle('${t.id}')">${IC.check}</button>
-      <span class="lbd"><span class="ln">${t.name}${t.custom?"":`<em class="lnote">${t.note}</em>`}</span>
-        <span class="lsub"><b class="st st-${s.k}">${s.txt}</b> · ${s.sub}</span></span>
+      <button class="lcheck${checked?" on":""}" aria-label="오늘 완료" onclick="logToggle('${t.id}')">${IC.check}</button>
+      <button class="lbd" aria-label="기록 직접 입력" onclick="openLogEdit('${t.id}')">
+        <span class="ln">${t.name}${t.custom?"":`<em class="lnote">${t.note}</em>`}</span>
+        <span class="lsub"><b class="st st-${s.k}">${s.txt}</b> · ${s.sub}</span>
+        ${memo ? `<span class="lmemo">${esc(memo)}</span>` : ""}</button>
       ${t.custom ? `<button class="ldel" aria-label="삭제" onclick="removeTask('${t.id}')">${IC.trash}</button>`
                  : `<span class="lic">${IC[t.icon]||IC.paw}</span>`}
     </div>`;
